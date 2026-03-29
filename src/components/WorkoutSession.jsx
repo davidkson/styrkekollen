@@ -74,6 +74,11 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
     );
   }
 
+  function removeExercise(exIdx) {
+    setExercises((prev) => prev.filter((_, i) => i !== exIdx));
+    setSets((prev) => prev.filter((_, i) => i !== exIdx));
+  }
+
   function toggleDone(exIdx, setIdx) {
     setSets((prev) =>
       prev.map((ex, i) =>
@@ -110,6 +115,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
         {exercises.map((ex, exIdx) => (
           <div key={ex.id} className="exercise-card">
             <div className="exercise-name">
+              <button className="remove-exercise-btn" onClick={() => removeExercise(exIdx)} title="Ta bort övning">✕</button>
               {editingName === ex.id ? (
                 <input
                   className="name-edit-input"

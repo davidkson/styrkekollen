@@ -1030,3 +1030,24 @@ body {
 .inline-add-form .edit-add-btn {
   flex: 2;
 }
+
+.remove-exercise-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  order: -1;
+}
+
+.exercise-card:hover .remove-exercise-btn {
+  opacity: 1;
+}
+
+.remove-exercise-btn:hover {
+  color: var(--danger);
+}
