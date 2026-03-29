@@ -1,0 +1,221 @@
+import { useState, useEffect } from "react";
+
+const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek" };
+
+export default function WorkoutSession({ template, savedSets, previousLog, customNames, onRename, onSave, onAddExercise, onFinish, onCancel }) {
+  const [editingName, setEditingName] = useState(null);
+  const [nameInput, setNameInput] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [formError, setFormError] = useState("");
+
+  const [exercises, setExercises] = useState(() => [...template.exercises]);
+  const [sets, setSets] = useState(() => {
+    if (savedSets) return savedSets;
+    return template.exercises.map((ex) => {
+      const prevEx = previousLog?.exercises?.find((e) => e.exerciseId === ex.id);
+      return {
+        exerciseId: ex.id,
+        comment: "",
+        previousComment: prevEx?.comment ?? "",
+        sets: Array.from({ length: ex.sets }, (_, i) => {
+          const prev = prevEx?.sets?.[i];
+          return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false };
+        }),
+      };
+    });
+  });
+
+  useEffect(() => {
+    onSave(sets);
+  }, [sets]);
+
+  function addExerciseInline(e) {
+    e.preventDefault();
+    if (!form.name.trim()) { setFormError("Namn krävs"); return; }
+    const setsNum = parseInt(form.sets);
+    if (!setsNum || setsNum < 1) { setFormError("Ange minst 1 set"); return; }
+
+    const newEx = {
+      id: crypto.randomUUID(),
+      name: form.name.trim(),
+      sets: setsNum,
+      repsRange: form.repsRange.trim() || "—",
+      rest: form.rest.trim() || "—",
+    };
+
+    setExercises((prev) => [...prev, newEx]);
+    setSets((prev) => [...prev, {
+      exerciseId: newEx.id,
+      comment: "",
+      previousComment: "",
+      sets: Array.from({ length: setsNum }, () => ({ weight: "", reps: "", done: false })),
+    }]);
+
+    onAddExercise(newEx);
+    setForm(EMPTY_FORM);
+    setFormError("");
+    setShowAddForm(false);
+  }
+
+  function updateComment(exIdx, value) {
+    setSets((prev) => prev.map((ex, i) => (i !== exIdx ? ex : { ...ex, comment: value })));
+  }
+
+  function update(exIdx, setIdx, field, value) {
+    setSets((prev) =>
+      prev.map((ex, i) =>
+        i !== exIdx ? ex : {
+          ...ex,
+          sets: ex.sets.map((s, j) => j !== setIdx ? s : { ...s, [field]: value }),
+        }
+      )
+    );
+  }
+
+  function toggleDone(exIdx, setIdx) {
+    setSets((prev) =>
+      prev.map((ex, i) =>
+        i !== exIdx ? ex : {
+          ...ex,
+          sets: ex.sets.map((s, j) => j !== setIdx ? s : { ...s, done: !s.done }),
+        }
+      )
+    );
+  }
+
+  function finish() {
+    onFinish({
+      id: crypto.randomUUID(),
+      templateId: template.id,
+      templateName: template.name,
+      date: new Date().toISOString(),
+      exercises: sets,
+    });
+  }
+
+  const totalDone = sets.reduce((sum, ex) => sum + ex.sets.filter((s) => s.done).length, 0);
+  const totalSets = sets.reduce((sum, ex) => sum + ex.sets.length, 0);
+
+  return (
+    <div className="session">
+      <div className="session-header">
+        <button className="back-btn" onClick={onCancel}>← Pausa</button>
+        <h2>{template.name}</h2>
+        <span className="progress-badge">{totalDone}/{totalSets} set</span>
+      </div>
+
+      <div className="exercises">
+        {exercises.map((ex, exIdx) => (
+          <div key={ex.id} className="exercise-card">
+            <div className="exercise-name">
+              {editingName === ex.id ? (
+                <input
+                  className="name-edit-input"
+                  value={nameInput}
+                  autoFocus
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onBlur={() => {
+                    if (nameInput.trim()) onRename(ex.id, nameInput.trim());
+                    setEditingName(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.target.blur();
+                    if (e.key === "Escape") setEditingName(null);
+                  }}
+                />
+              ) : (
+                <>
+                  {customNames[ex.id] ?? ex.name}
+                  <button
+                    className="rename-btn"
+                    onClick={() => { setNameInput(customNames[ex.id] ?? ex.name); setEditingName(ex.id); }}
+                    title="Byt namn"
+                  >✎</button>
+                </>
+              )}
+            </div>
+            <div className="exercise-meta">
+              {ex.sets} set · {ex.repsRange} reps · Vila: {ex.rest}
+            </div>
+            <div className="sets-grid">
+              <div className="sets-header">
+                <span>Set</span>
+                <span>Vikt (kg)</span>
+                <span>Reps</span>
+                <span>✓</span>
+              </div>
+              {sets[exIdx]?.sets.map((s, setIdx) => (
+                <div key={setIdx} className={`set-row ${s.done ? "set-done" : ""}`}>
+                  <span className="set-number">{setIdx + 1}</span>
+                  <input type="number" min="0" step="0.5" placeholder="—" value={s.weight}
+                    onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
+                  <input type="number" min="0" placeholder="—" value={s.reps}
+                    onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
+                  <button className={`done-btn ${s.done ? "done-active" : ""}`}
+                    onClick={() => toggleDone(exIdx, setIdx)}>✓</button>
+                </div>
+              ))}
+            </div>
+            {sets[exIdx]?.previousComment && (
+              <div className="prev-comment">
+                <span className="prev-comment-label">Förra gången:</span> {sets[exIdx].previousComment}
+              </div>
+            )}
+            <textarea
+              className="exercise-comment"
+              placeholder="Anteckning (t.ex. känsla, teknik, justering...)"
+              value={sets[exIdx]?.comment ?? ""}
+              onChange={(e) => updateComment(exIdx, e.target.value)}
+            />
+          </div>
+        ))}
+
+        {showAddForm ? (
+          <form className="inline-add-form" onSubmit={addExerciseInline}>
+            <div className="edit-form-title">Ny övning</div>
+            {formError && <p className="edit-error">{formError}</p>}
+            <input className="edit-input" placeholder="Namn på övningen" autoFocus
+              value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <div className="edit-row-inputs">
+              <label>
+                <span>Set</span>
+                <input className="edit-input edit-input-small" type="number" min="1"
+                  value={form.sets} onChange={(e) => setForm({ ...form, sets: e.target.value })} />
+              </label>
+              <label>
+                <span>Reps</span>
+                <input className="edit-input edit-input-small" placeholder="8–12"
+                  value={form.repsRange} onChange={(e) => setForm({ ...form, repsRange: e.target.value })} />
+              </label>
+              <label>
+                <span>Vila</span>
+                <input className="edit-input edit-input-small" placeholder="60 sek"
+                  value={form.rest} onChange={(e) => setForm({ ...form, rest: e.target.value })} />
+              </label>
+            </div>
+            <div className="inline-add-actions">
+              <button type="button" className="inline-cancel-btn" onClick={() => { setShowAddForm(false); setFormError(""); }}>Avbryt</button>
+              <button type="submit" className="edit-add-btn">Lägg till</button>
+            </div>
+          </form>
+        ) : (
+          <button className="add-exercise-btn" onClick={() => setShowAddForm(true)}>
+            + Lägg till övning
+          </button>
+        )}
+      </div>
+
+      <div className="session-footer">
+        <label className="confirm-label">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+          Passet är klart
+        </label>
+        <button className="finish-btn" disabled={!confirmed} onClick={finish}>
+          Spara pass
+        </button>
+      </div>
+    </div>
+  );
+}

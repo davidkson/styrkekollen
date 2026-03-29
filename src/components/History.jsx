@@ -1,0 +1,66 @@
+import { workoutTemplates } from "../data/workouts";
+
+export default function History({ logs, customNames, customExercises, onBack, onDelete }) {
+  const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  function exerciseName(templateId, exerciseId) {
+    if (customNames?.[exerciseId]) return customNames[exerciseId];
+    const t = workoutTemplates.find((t) => t.id === templateId);
+    const fromTemplate = t?.exercises.find((e) => e.id === exerciseId)?.name;
+    if (fromTemplate) return fromTemplate;
+    const fromCustom = customExercises?.[templateId]?.find((e) => e.id === exerciseId)?.name;
+    return fromCustom ?? exerciseId;
+  }
+
+  return (
+    <div className="history">
+      <div className="session-header">
+        <button className="back-btn" onClick={onBack}>← Tillbaka</button>
+        <h2>Historik</h2>
+        <span />
+      </div>
+
+      {sorted.length === 0 && (
+        <p className="empty">Inga pass loggade ännu.</p>
+      )}
+
+      {sorted.map((log) => (
+        <div key={log.id} className="history-entry">
+          <div className="history-entry-header">
+            <div>
+              <div className="history-entry-name">{log.templateName}</div>
+              <div className="history-entry-date">
+                {new Date(log.date).toLocaleDateString("sv-SE", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+            </div>
+            <button className="delete-btn" onClick={() => onDelete(log.id)}>✕</button>
+          </div>
+
+          <div className="history-exercises">
+            {log.exercises.map((ex) => {
+              const doneSets = ex.sets.filter((s) => s.done || s.weight || s.reps);
+              if (!doneSets.length) return null;
+              return (
+                <div key={ex.exerciseId} className="history-exercise">
+                  <span className="history-ex-name">{exerciseName(log.templateId, ex.exerciseId)}</span>
+                  <span className="history-ex-sets">
+                    {doneSets.map((s, i) => (
+                      <span key={i} className="history-set-chip">
+                        {s.weight ? `${s.weight}kg` : "—"} × {s.reps || "—"}
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
