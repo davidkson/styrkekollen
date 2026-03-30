@@ -4,6 +4,7 @@ import WorkoutSession from "./components/WorkoutSession";
 import History from "./components/History";
 import EditPass from "./components/EditPass";
 import Login from "./components/Login";
+import MigratePrompt from "./components/MigratePrompt";
 import PlateCalculator from "./components/PlateCalculator";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
@@ -11,6 +12,7 @@ import "./App.css";
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("auth") === "1");
+  const [showMigrate, setShowMigrate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState([]);
   const [customNames, setCustomNames] = useState({});
@@ -121,8 +123,26 @@ export default function App() {
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0] ?? null;
   }
 
+  function hasLocalData() {
+    return (
+      localStorage.getItem("workout-logs") ||
+      localStorage.getItem("custom-exercises") ||
+      localStorage.getItem("exercise-names") ||
+      localStorage.getItem("active-session")
+    );
+  }
+
   if (!authenticated) {
-    return <Login onLogin={() => setAuthenticated(true)} />;
+    return (
+      <Login onLogin={() => {
+        setAuthenticated(true);
+        if (hasLocalData()) setShowMigrate(true);
+      }} />
+    );
+  }
+
+  if (showMigrate) {
+    return <MigratePrompt onDone={() => { setShowMigrate(false); loadAll(); }} />;
   }
 
   if (loading) {
