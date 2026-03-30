@@ -165,6 +165,7 @@ export default function App() {
             onStart={startWorkout}
             onResume={resumeWorkout}
             onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
+            onLogout={() => { sessionStorage.removeItem("auth"); setAuthenticated(false); }}
           />
           <button className="history-btn" onClick={() => setView("history")}>
             Historik ({logs.length})

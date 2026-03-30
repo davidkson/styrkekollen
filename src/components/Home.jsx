@@ -1,6 +1,6 @@
 import { workoutTemplates } from "../data/workouts";
 
-export default function Home({ onStart, onResume, onEdit, logs, activeSession, customExercises }) {
+export default function Home({ onStart, onResume, onEdit, onLogout, logs, activeSession, customExercises }) {
   function lastDate(templateId) {
     const entries = logs.filter((l) => l.templateId === templateId);
     if (!entries.length) return null;
@@ -14,7 +14,10 @@ export default function Home({ onStart, onResume, onEdit, logs, activeSession, c
 
   return (
     <div className="home">
-      <h1>Styrkekollen</h1>
+      <div className="home-header">
+        <h1>Styrkekollen</h1>
+        <button className="logout-btn" onClick={onLogout} title="Logga ut">↩</button>
+      </div>
 
       {activeSession ? (
         <>

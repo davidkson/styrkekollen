@@ -1228,3 +1228,22 @@ body {
   font-size: 0.8rem;
   color: var(--danger) !important;
 }
+
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.logout-btn:hover { color: var(--text); }
