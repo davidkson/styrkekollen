@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as db from "../lib/db";
 
 export default function MigratePrompt({ onDone }) {
-  const [status, setStatus] = useState("idle"); // idle | migrating | done | error
+  const [status, setStatus] = useState("idle");
   const [summary, setSummary] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -19,44 +19,42 @@ export default function MigratePrompt({ onDone }) {
     try {
       const { logs, customEx, names, session } = detect();
 
-      // Logs
+      // Insert logs — skip only true duplicates (conflict on id)
+      let migratedLogs = 0;
       for (const log of logs) {
-        await db.insertLog(log).catch(() => {}); // skip duplicates
-      }
-
-      // Custom exercises per template
-      for (const [templateId, exercises] of Object.entries(customEx)) {
-        if (exercises?.length) {
-          await db.upsertCustomExercises(templateId, exercises);
+        try {
+          await db.insertLog(log);
+          migratedLogs++;
+        } catch (e) {
+          // If it's a duplicate key error, skip — otherwise re-throw
+          if (!e?.message?.includes("duplicate") && !e?.code?.includes("23505")) throw e;
         }
       }
 
-      // Exercise names
+      for (const [templateId, exercises] of Object.entries(customEx)) {
+        if (exercises?.length) await db.upsertCustomExercises(templateId, exercises);
+      }
+
       for (const [exerciseId, name] of Object.entries(names)) {
         await db.upsertExerciseName(exerciseId, name);
       }
 
-      // Active session
-      if (session) {
-        await db.saveActiveSession(session);
-      }
+      if (session) await db.saveActiveSession(session);
 
-      setSummary({
-        logs: logs.length,
-        templates: Object.keys(customEx).length,
-        names: Object.keys(names).length,
-        session: !!session,
-      });
-
-      // Clear localStorage
+      // Only clear localStorage after confirmed success
       localStorage.removeItem("workout-logs");
       localStorage.removeItem("custom-exercises");
       localStorage.removeItem("exercise-names");
       localStorage.removeItem("active-session");
 
+      setSummary({
+        logs: migratedLogs,
+        names: Object.keys(names).length,
+        session: !!session,
+      });
       setStatus("done");
     } catch (e) {
-      setErrorMsg(e.message ?? "Okänt fel");
+      setErrorMsg(e?.message ?? "Okänt fel — localStorage är orörd");
       setStatus("error");
     }
   }
@@ -98,7 +96,10 @@ export default function MigratePrompt({ onDone }) {
             <div className="migrate-icon">❌</div>
             <h2>Något gick fel</h2>
             <p className="migrate-error">{errorMsg}</p>
-            <button className="migrate-btn" onClick={onDone}>Stäng</button>
+            <div className="migrate-actions">
+              <button className="migrate-skip" onClick={onDone}>Stäng</button>
+              <button className="migrate-btn" onClick={migrate}>Försök igen</button>
+            </div>
           </>
         )}
       </div>
