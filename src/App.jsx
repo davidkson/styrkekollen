@@ -1,20 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Home from "./components/Home";
 import WorkoutSession from "./components/WorkoutSession";
 import History from "./components/History";
 import EditPass from "./components/EditPass";
+import Login from "./components/Login";
 import PlateCalculator from "./components/PlateCalculator";
-import { useStorage } from "./hooks/useStorage";
 import { workoutTemplates } from "./data/workouts";
+import * as db from "./lib/db";
 import "./App.css";
 
 export default function App() {
-  const [logs, setLogs] = useStorage("workout-logs", []);
-  const [customNames, setCustomNames] = useStorage("exercise-names", {});
-  const [customExercises, setCustomExercises] = useStorage("custom-exercises", {});
-  const [activeSession, setActiveSession] = useStorage("active-session", null);
+  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("auth") === "1");
+  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState([]);
+  const [customNames, setCustomNames] = useState({});
+  const [customExercises, setCustomExercises] = useState({});
+  const [activeSession, setActiveSession] = useState(null);
   const [view, setView] = useState("home");
   const [activeTemplate, setActiveTemplate] = useState(null);
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (!authenticated) { setLoading(false); return; }
+    loadAll();
+  }, [authenticated]);
+
+  async function loadAll() {
+    setLoading(true);
+    try {
+      const [logsData, customEx, names, session] = await Promise.all([
+        db.getLogs(),
+        db.getCustomExercises(),
+        db.getExerciseNames(),
+        db.getActiveSession(),
+      ]);
+      setLogs(logsData);
+      setCustomExercises(customEx);
+      setCustomNames(names);
+      setActiveSession(session);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function mergedTemplate(template) {
     return {
@@ -23,29 +50,35 @@ export default function App() {
     };
   }
 
-  function renameExercise(exerciseId, name) {
-    setCustomNames({ ...customNames, [exerciseId]: name });
+  async function renameExercise(exerciseId, name) {
+    setCustomNames((prev) => ({ ...prev, [exerciseId]: name }));
+    await db.upsertExerciseName(exerciseId, name);
   }
 
-  function addExercise(templateId, exercise) {
-    setCustomExercises({
-      ...customExercises,
-      [templateId]: [...(customExercises[templateId] ?? []), exercise],
-    });
+  async function addExercise(templateId, exercise) {
+    const updated = [...(customExercises[templateId] ?? []), exercise];
+    setCustomExercises((prev) => ({ ...prev, [templateId]: updated }));
+    await db.upsertCustomExercises(templateId, updated);
   }
 
-  function removeExercise(templateId, exerciseId) {
-    setCustomExercises({
-      ...customExercises,
-      [templateId]: (customExercises[templateId] ?? []).filter((e) => e.id !== exerciseId),
-    });
+  async function removeExercise(templateId, exerciseId) {
+    const updated = (customExercises[templateId] ?? []).filter((e) => e.id !== exerciseId);
+    setCustomExercises((prev) => ({ ...prev, [templateId]: updated }));
+    await db.upsertCustomExercises(templateId, updated);
   }
 
-  function startWorkout(template) {
+  async function startWorkout(template) {
     const merged = mergedTemplate(template);
-    setActiveSession({ templateId: merged.id, templateName: merged.name, startedAt: new Date().toISOString(), sets: null });
+    const session = {
+      templateId: merged.id,
+      templateName: merged.name,
+      startedAt: new Date().toISOString(),
+      sets: null,
+    };
+    setActiveSession(session);
     setActiveTemplate(merged);
     setView("session");
+    await db.saveActiveSession(session);
   }
 
   function resumeWorkout() {
@@ -55,29 +88,50 @@ export default function App() {
   }
 
   function saveSessionState(sets) {
-    setActiveSession((prev) => ({ ...prev, sets }));
+    const updated = { ...activeSession, sets };
+    setActiveSession(updated);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => db.saveActiveSession(updated), 2000);
   }
 
-  function finishWorkout(log) {
-    setLogs([...logs, log]);
+  async function finishWorkout(log) {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setLogs((prev) => [log, ...prev]);
     setActiveSession(null);
     setView("home");
     setActiveTemplate(null);
+    await Promise.all([db.insertLog(log), db.clearActiveSession()]);
   }
 
-  function cancelWorkout() {
+  async function cancelWorkout() {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    await db.saveActiveSession(activeSession);
     setView("home");
     setActiveTemplate(null);
   }
 
-  function deleteLog(id) {
-    setLogs(logs.filter((l) => l.id !== id));
+  async function deleteLog(id) {
+    setLogs((prev) => prev.filter((l) => l.id !== id));
+    await db.deleteLog(id);
   }
 
   function previousLog(templateId) {
     return logs
       .filter((l) => l.templateId === templateId)
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0] ?? null;
+  }
+
+  if (!authenticated) {
+    return <Login onLogin={() => setAuthenticated(true)} />;
+  }
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner" />
+        <p>Laddar...</p>
+      </div>
+    );
   }
 
   return (
