@@ -18,7 +18,7 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
         <h1>Styrkekollen</h1>
         <div className="home-header-actions">
           <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
-            {theme === "dark" ? "☀️" : theme === "light" ? "🔥" : "🌙"}
+            {theme === "dark" ? "☀️" : theme === "light" ? "🔥" : theme === "ember" ? "✨" : "🌙"}
           </button>
           <button className="logout-btn" onClick={onLogout} title="Logga ut">↩</button>
         </div>
