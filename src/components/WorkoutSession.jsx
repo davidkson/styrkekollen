@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek" };
 
-export default function WorkoutSession({ template, savedSets, previousLog, customNames, onRename, onSave, onAddExercise, onFinish, onCancel, onToggleTheme, theme }) {
+export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, onRename, onSave, onAddExercise, onFinish, onCancel, onToggleTheme, theme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -91,11 +91,14 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
   }
 
   function finish() {
+    const finishedAt = new Date().toISOString();
     onFinish({
       id: crypto.randomUUID(),
       templateId: template.id,
       templateName: template.name,
-      date: new Date().toISOString(),
+      date: finishedAt,
+      startedAt: startedAt ?? finishedAt,
+      finishedAt,
       exercises: sets,
     });
   }

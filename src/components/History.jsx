@@ -1,5 +1,19 @@
 import { workoutTemplates } from "../data/workouts";
 
+function formatTime(iso) {
+  return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDuration(startedAt, finishedAt) {
+  const ms = new Date(finishedAt) - new Date(startedAt);
+  if (ms <= 0) return null;
+  const totalMin = Math.round(ms / 60000);
+  if (totalMin < 60) return `${totalMin} min`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `${h}h ${m}min` : `${h}h`;
+}
+
 export default function History({ logs, customNames, customExercises, onBack, onDelete }) {
   const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -37,6 +51,16 @@ export default function History({ logs, customNames, customExercises, onBack, on
                   day: "numeric",
                 })}
               </div>
+              {log.startedAt && log.finishedAt && (
+                <div className="history-entry-duration">
+                  {formatTime(log.startedAt)} – {formatTime(log.finishedAt)}
+                  {formatDuration(log.startedAt, log.finishedAt) && (
+                    <span className="duration-badge">
+                      {formatDuration(log.startedAt, log.finishedAt)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <button className="delete-btn" onClick={() => onDelete(log.id)}>✕</button>
           </div>

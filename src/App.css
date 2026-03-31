@@ -540,6 +540,25 @@ body {
   text-transform: capitalize;
 }
 
+.history-entry-duration {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.duration-badge {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .delete-btn {
   background: none;
   border: none;

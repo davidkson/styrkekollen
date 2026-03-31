@@ -192,6 +192,7 @@ export default function App() {
           savedSets={activeSession?.templateId === activeTemplate.id ? activeSession.sets : null}
           previousLog={previousLog(activeTemplate.id)}
           customNames={customNames}
+          startedAt={activeSession?.startedAt}
           onRename={renameExercise}
           onSave={saveSessionState}
           onAddExercise={(ex) => addExercise(activeTemplate.id, ex)}
