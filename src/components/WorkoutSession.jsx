@@ -74,6 +74,21 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
     );
   }
 
+  function copyPrev(exIdx, setIdx) {
+    setSets((prev) =>
+      prev.map((ex, i) => {
+        if (i !== exIdx) return ex;
+        const src = ex.sets[setIdx - 1];
+        return {
+          ...ex,
+          sets: ex.sets.map((s, j) =>
+            j !== setIdx ? s : { ...s, weight: src.weight, reps: src.reps }
+          ),
+        };
+      })
+    );
+  }
+
   function removeExercise(exIdx) {
     setExercises((prev) => prev.filter((_, i) => i !== exIdx));
     setSets((prev) => prev.filter((_, i) => i !== exIdx));
@@ -160,17 +175,30 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                 <span>Reps</span>
                 <span>✓</span>
               </div>
-              {sets[exIdx]?.sets.map((s, setIdx) => (
-                <div key={setIdx} className={`set-row ${s.done ? "set-done" : ""}`}>
-                  <span className="set-number">{setIdx + 1}</span>
-                  <input type="number" min="0" step="0.5" placeholder="—" value={s.weight}
-                    onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
-                  <input type="number" min="0" placeholder="—" value={s.reps}
-                    onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
-                  <button className={`done-btn ${s.done ? "done-active" : ""}`}
-                    onClick={() => toggleDone(exIdx, setIdx)}>✓</button>
-                </div>
-              ))}
+              {sets[exIdx]?.sets.map((s, setIdx) => {
+                const prev = setIdx > 0 ? sets[exIdx].sets[setIdx - 1] : null;
+                const canCopy = prev && (prev.weight || prev.reps);
+                return (
+                  <div key={setIdx} className={`set-row ${s.done ? "set-done" : ""}`}>
+                    <span className="set-number">
+                      {setIdx + 1}
+                      {canCopy && (
+                        <button
+                          className="copy-prev-btn"
+                          title="Kopiera föregående rad"
+                          onClick={() => copyPrev(exIdx, setIdx)}
+                        >↓</button>
+                      )}
+                    </span>
+                    <input type="number" min="0" step="0.5" placeholder="—" value={s.weight}
+                      onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
+                    <input type="number" min="0" placeholder="—" value={s.reps}
+                      onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
+                    <button className={`done-btn ${s.done ? "done-active" : ""}`}
+                      onClick={() => toggleDone(exIdx, setIdx)}>✓</button>
+                  </div>
+                );
+              })}
             </div>
             {sets[exIdx]?.previousComment && (
               <div className="prev-comment">
