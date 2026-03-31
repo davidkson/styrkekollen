@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek" };
 
-export default function WorkoutSession({ template, savedSets, previousLog, customNames, onRename, onSave, onAddExercise, onFinish, onCancel }) {
+export default function WorkoutSession({ template, savedSets, previousLog, customNames, onRename, onSave, onAddExercise, onFinish, onCancel, onToggleTheme, theme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -108,7 +108,12 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
       <div className="session-header">
         <button className="back-btn" onClick={onCancel}>← Pausa</button>
         <h2>{template.name}</h2>
-        <span className="progress-badge">{totalDone}/{totalSets} set</span>
+        <div className="session-header-right">
+          <span className="progress-badge">{totalDone}/{totalSets} set</span>
+          <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
+            {theme === "dark" ? "☀️" : theme === "light" ? "🔥" : theme === "ember" ? "✨" : "🌙"}
+          </button>
+        </div>
       </div>
 
       <div className="exercises">

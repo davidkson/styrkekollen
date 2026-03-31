@@ -277,6 +277,12 @@ body {
   text-align: center;
 }
 
+.session-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .back-btn {
   background: none;
   border: none;

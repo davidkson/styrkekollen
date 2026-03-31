@@ -197,6 +197,8 @@ export default function App() {
           onAddExercise={(ex) => addExercise(activeTemplate.id, ex)}
           onFinish={finishWorkout}
           onCancel={cancelWorkout}
+          onToggleTheme={toggleTheme}
+          theme={theme}
         />
       )}
       {view === "history" && (
