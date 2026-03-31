@@ -6,6 +6,7 @@ import EditPass from "./components/EditPass";
 import Login from "./components/Login";
 import MigratePrompt from "./components/MigratePrompt";
 import PlateCalculator from "./components/PlateCalculator";
+import RestTimer from "./components/RestTimer";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
 import { useTheme } from "./hooks/useTheme";
@@ -207,6 +208,7 @@ export default function App() {
           onDelete={deleteLog}
         />
       )}
+      <RestTimer />
       <PlateCalculator />
     </div>
   );
