@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { workoutTemplates } from "../data/workouts";
 
 function formatTime(iso) {
@@ -15,6 +16,7 @@ function formatDuration(startedAt, finishedAt) {
 }
 
 export default function History({ logs, customNames, customExercises, onBack, onDelete }) {
+  const [confirmingId, setConfirmingId] = useState(null);
   const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   function exerciseName(templateId, exerciseId) {
@@ -62,7 +64,15 @@ export default function History({ logs, customNames, customExercises, onBack, on
                 </div>
               )}
             </div>
-            <button className="delete-btn" onClick={() => onDelete(log.id)}>✕</button>
+            {confirmingId === log.id ? (
+              <div className="delete-confirm">
+                <span>Ta bort?</span>
+                <button className="delete-confirm-yes" onClick={() => { onDelete(log.id); setConfirmingId(null); }}>Ja</button>
+                <button className="delete-confirm-no" onClick={() => setConfirmingId(null)}>Nej</button>
+              </div>
+            ) : (
+              <button className="delete-btn" onClick={() => setConfirmingId(log.id)}>✕</button>
+            )}
           </div>
 
           <div className="history-exercises">
