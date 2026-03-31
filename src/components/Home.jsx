@@ -1,6 +1,6 @@
 import { workoutTemplates } from "../data/workouts";
 
-export default function Home({ onStart, onResume, onEdit, onLogout, logs, activeSession, customExercises }) {
+export default function Home({ onStart, onResume, onEdit, onLogout, onToggleTheme, theme, logs, activeSession, customExercises }) {
   function lastDate(templateId) {
     const entries = logs.filter((l) => l.templateId === templateId);
     if (!entries.length) return null;
@@ -16,7 +16,12 @@ export default function Home({ onStart, onResume, onEdit, onLogout, logs, active
     <div className="home">
       <div className="home-header">
         <h1>Styrkekollen</h1>
-        <button className="logout-btn" onClick={onLogout} title="Logga ut">↩</button>
+        <div className="home-header-actions">
+          <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+          <button className="logout-btn" onClick={onLogout} title="Logga ut">↩</button>
+        </div>
       </div>
 
       {activeSession ? (

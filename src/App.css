@@ -14,6 +14,19 @@
   --radius: 12px;
 }
 
+[data-theme="light"] {
+  --bg: #f2f2f2;
+  --surface: #ffffff;
+  --surface2: #e8e8e8;
+  --border: #d0d0d0;
+  --accent: #5c4fff;
+  --accent-dim: #4a3fd4;
+  --text: #111111;
+  --muted: #777777;
+  --danger: #e53935;
+  --green: #2e7d32;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -1247,3 +1260,18 @@ body {
 }
 
 .logout-btn:hover { color: var(--text); }
+
+.home-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.theme-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}

@@ -8,9 +8,11 @@ import MigratePrompt from "./components/MigratePrompt";
 import PlateCalculator from "./components/PlateCalculator";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
+import { useTheme } from "./hooks/useTheme";
 import "./App.css";
 
 export default function App() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("auth") === "1");
   const [showMigrate, setShowMigrate] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -166,6 +168,8 @@ export default function App() {
             onResume={resumeWorkout}
             onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
             onLogout={() => { sessionStorage.removeItem("auth"); setAuthenticated(false); }}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
           <button className="history-btn" onClick={() => setView("history")}>
             Historik ({logs.length})
