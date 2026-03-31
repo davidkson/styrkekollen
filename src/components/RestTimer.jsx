@@ -85,6 +85,10 @@ export default function RestTimer() {
   const progress = remaining / preset;
 
   return (
+    <>
+    {done && (
+      <div className="timer-flash-overlay" onClick={reset} />
+    )}
     <div className="timer-wrapper">
       {open && (
         <div className="timer-panel">
@@ -138,5 +142,6 @@ export default function RestTimer() {
         {running ? fmt(remaining) : "⏱"}
       </button>
     </div>
+    </>
   );
 }
