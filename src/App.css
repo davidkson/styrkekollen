@@ -12,6 +12,25 @@
   --danger: #ff4d4d;
   --green: #4caf50;
   --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+[data-theme="fresh"] {
+  --bg: #f4f3ff;
+  --surface: #ffffff;
+  --surface2: #ede9fe;
+  --border: #ddd6fe;
+  --accent: #4f46e5;
+  --accent-dim: #3730a3;
+  --text: #1e1b4b;
+  --muted: #6b7280;
+  --danger: #e11d48;
+  --green: #059669;
+  --font: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --fresh-teal: #0ea5e9;
+  --fresh-pink: #ec4899;
+  --fresh-amber: #f59e0b;
+  --fresh-emerald: #10b981;
 }
 
 [data-theme="ember"] {
@@ -43,7 +62,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font);
   font-size: 15px;
   line-height: 1.5;
 }
@@ -1505,4 +1524,188 @@ body {
 [data-theme="ember"] .edit-add-btn,
 [data-theme="ember"] .timer-start-btn {
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* ── Fresh tema ─────────────────────────────────────── */
+[data-theme="fresh"] body,
+[data-theme="fresh"] .app {
+  font-family: var(--font);
+}
+
+/* Title: multi-stop gradient */
+[data-theme="fresh"] .home h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(120deg, #4f46e5 0%, #ec4899 55%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Cards: clean white with soft shadow, no visible border */
+[data-theme="fresh"] .pass-card,
+[data-theme="fresh"] .exercise-card,
+[data-theme="fresh"] .history-entry,
+[data-theme="fresh"] .edit-exercise-row {
+  border: none;
+  box-shadow: 0 1px 4px rgba(79,70,229,0.06), 0 6px 20px rgba(79,70,229,0.08);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+/* Pass cards: coloured left accent bar per position */
+[data-theme="fresh"] .pass-card-wrapper:nth-child(1) .pass-card,
+[data-theme="fresh"] .pass-card-wrapper:nth-child(1) .pass-card-blocked {
+  border-left: 4px solid #4f46e5 !important;
+}
+[data-theme="fresh"] .pass-card-wrapper:nth-child(2) .pass-card,
+[data-theme="fresh"] .pass-card-wrapper:nth-child(2) .pass-card-blocked {
+  border-left: 4px solid #0ea5e9 !important;
+}
+[data-theme="fresh"] .pass-card-wrapper:nth-child(3) .pass-card,
+[data-theme="fresh"] .pass-card-wrapper:nth-child(3) .pass-card-blocked {
+  border-left: 4px solid #ec4899 !important;
+}
+[data-theme="fresh"] .pass-card-wrapper:nth-child(4) .pass-card,
+[data-theme="fresh"] .pass-card-wrapper:nth-child(4) .pass-card-blocked {
+  border-left: 4px solid #f59e0b !important;
+}
+[data-theme="fresh"] .pass-card-wrapper:nth-child(5) .pass-card,
+[data-theme="fresh"] .pass-card-wrapper:nth-child(5) .pass-card-blocked {
+  border-left: 4px solid #10b981 !important;
+}
+
+[data-theme="fresh"] .pass-card:hover {
+  box-shadow: 0 4px 12px rgba(79,70,229,0.12), 0 12px 32px rgba(79,70,229,0.16);
+  transform: translateY(-2px);
+}
+
+[data-theme="fresh"] .pass-card-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* Buttons: indigo→violet gradient */
+[data-theme="fresh"] .finish-btn,
+[data-theme="fresh"] .resume-btn,
+[data-theme="fresh"] .migrate-btn,
+[data-theme="fresh"] .login-btn,
+[data-theme="fresh"] .edit-add-btn {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.4);
+}
+
+[data-theme="fresh"] .timer-start-btn {
+  background: linear-gradient(135deg, #0ea5e9, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(14,165,233,0.4);
+}
+
+/* Progress badge: teal tint */
+[data-theme="fresh"] .progress-badge {
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+/* Active session banner: gradient left border */
+[data-theme="fresh"] .active-session-banner {
+  border: none;
+  border-left: 4px solid #ec4899;
+  box-shadow: 0 4px 20px rgba(236,72,153,0.12);
+}
+
+[data-theme="fresh"] .active-dot {
+  background: #ec4899;
+}
+
+/* Exercise cards: teal left strip */
+[data-theme="fresh"] .exercise-card {
+  border-left: 3px solid #0ea5e9 !important;
+}
+
+/* Floating panels */
+[data-theme="fresh"] .plate-panel,
+[data-theme="fresh"] .timer-panel {
+  border: none;
+  box-shadow: 0 8px 32px rgba(79,70,229,0.15), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* Tab buttons in plate calc */
+[data-theme="fresh"] .plate-tab.plate-tab-active {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* History entries: amber left strip */
+[data-theme="fresh"] .history-entry {
+  border-left: 3px solid #f59e0b !important;
+}
+
+/* Subtitle */
+[data-theme="fresh"] .subtitle {
+  font-weight: 500;
+  color: #6366f1;
+  letter-spacing: 0.01em;
+}
+
+/* Back button */
+[data-theme="fresh"] .back-btn {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+/* Session header */
+[data-theme="fresh"] .session-header h2 {
+  background: linear-gradient(90deg, #4f46e5, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+/* Timer ring fill: teal */
+[data-theme="fresh"] .timer-ring-fill {
+  stroke: #0ea5e9;
+}
+
+/* History btn pill */
+[data-theme="fresh"] .history-btn {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+}
+
+/* Set row inputs */
+[data-theme="fresh"] .set-input {
+  border-color: #ddd6fe;
+  background: #f8f7ff;
+}
+
+[data-theme="fresh"] .set-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+}
+
+/* FAB buttons */
+[data-theme="fresh"] .plate-fab {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.35);
+}
+
+[data-theme="fresh"] .timer-fab {
+  background: linear-gradient(135deg, #0ea5e9, #4f46e5);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(14,165,233,0.35);
 }
