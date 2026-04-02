@@ -13,6 +13,8 @@ export async function getLogs() {
     templateId: row.template_id,
     templateName: row.template_name,
     date: row.date,
+    startedAt: row.started_at ?? null,
+    finishedAt: row.finished_at ?? null,
     exercises: row.exercises,
   }));
 }
@@ -23,8 +25,18 @@ export async function insertLog(log) {
     template_id: log.templateId,
     template_name: log.templateName,
     date: log.date,
+    started_at: log.startedAt ?? null,
+    finished_at: log.finishedAt ?? null,
     exercises: log.exercises,
   });
+  if (error) throw error;
+}
+
+export async function updateLogTimestamps(id, startedAt, finishedAt) {
+  const { error } = await supabase
+    .from("workout_logs")
+    .update({ started_at: startedAt, finished_at: finishedAt })
+    .eq("id", id);
   if (error) throw error;
 }
 

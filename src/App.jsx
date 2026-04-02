@@ -120,6 +120,11 @@ export default function App() {
     await db.deleteLog(id);
   }
 
+  async function updateLogTimestamps(id, startedAt, finishedAt) {
+    setLogs((prev) => prev.map((l) => l.id === id ? { ...l, startedAt, finishedAt } : l));
+    await db.updateLogTimestamps(id, startedAt, finishedAt);
+  }
+
   function previousLog(templateId) {
     return logs
       .filter((l) => l.templateId === templateId)
@@ -209,6 +214,7 @@ export default function App() {
           customExercises={customExercises}
           onBack={() => setView("home")}
           onDelete={deleteLog}
+          onUpdateTimestamps={updateLogTimestamps}
         />
       )}
       <RestTimer />

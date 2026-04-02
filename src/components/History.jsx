@@ -15,9 +15,29 @@ function formatDuration(startedAt, finishedAt) {
   return m > 0 ? `${h}h ${m}min` : `${h}h`;
 }
 
-export default function History({ logs, customNames, customExercises, onBack, onDelete }) {
+function toInputValue(iso) {
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export default function History({ logs, customNames, customExercises, onBack, onDelete, onUpdateTimestamps }) {
   const [confirmingId, setConfirmingId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editStart, setEditStart] = useState("");
+  const [editEnd, setEditEnd] = useState("");
   const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  function startEditing(log) {
+    setEditingId(log.id);
+    setEditStart(log.startedAt ? toInputValue(log.startedAt) : "");
+    setEditEnd(log.finishedAt ? toInputValue(log.finishedAt) : "");
+  }
+
+  function saveEditing() {
+    onUpdateTimestamps(editingId, new Date(editStart).toISOString(), new Date(editEnd).toISOString());
+    setEditingId(null);
+  }
 
   function exerciseName(templateId, exerciseId) {
     if (customNames?.[exerciseId]) return customNames[exerciseId];
@@ -53,16 +73,30 @@ export default function History({ logs, customNames, customExercises, onBack, on
                   day: "numeric",
                 })}
               </div>
-              {log.startedAt && log.finishedAt && (
+              {editingId === log.id ? (
+                <div className="timestamp-edit">
+                  <label>
+                    <span>Start</span>
+                    <input type="datetime-local" value={editStart} onChange={(e) => setEditStart(e.target.value)} />
+                  </label>
+                  <label>
+                    <span>Slut</span>
+                    <input type="datetime-local" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} />
+                  </label>
+                  <div className="timestamp-edit-actions">
+                    <button className="delete-confirm-no" onClick={() => setEditingId(null)}>Avbryt</button>
+                    <button className="delete-confirm-yes" style={{background: "var(--green)"}} onClick={saveEditing}>Spara</button>
+                  </div>
+                </div>
+              ) : log.startedAt && log.finishedAt ? (
                 <div className="history-entry-duration">
                   {formatTime(log.startedAt)} – {formatTime(log.finishedAt)}
                   {formatDuration(log.startedAt, log.finishedAt) && (
-                    <span className="duration-badge">
-                      {formatDuration(log.startedAt, log.finishedAt)}
-                    </span>
+                    <span className="duration-badge">{formatDuration(log.startedAt, log.finishedAt)}</span>
                   )}
+                  <button className="timestamp-edit-btn" onClick={() => startEditing(log)} title="Ändra tider">✎</button>
                 </div>
-              )}
+              ) : null}
             </div>
             {confirmingId === log.id ? (
               <div className="delete-confirm">

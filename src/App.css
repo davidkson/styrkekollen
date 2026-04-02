@@ -592,6 +592,54 @@ body {
 
 .delete-btn:hover { color: var(--danger); }
 
+.timestamp-edit-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 2px;
+  opacity: 0.6;
+}
+
+.timestamp-edit-btn:hover { opacity: 1; color: var(--accent); }
+
+.timestamp-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.timestamp-edit label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.timestamp-edit label span {
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.timestamp-edit input[type="datetime-local"] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--text);
+  font-size: 0.8rem;
+  flex: 1;
+}
+
+.timestamp-edit-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 .delete-confirm {
   display: flex;
   align-items: center;
