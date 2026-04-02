@@ -1,5 +1,7 @@
 import { workoutTemplates } from "../data/workouts";
 
+const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
+
 export default function Home({ onStart, onResume, onEdit, onLogout, onToggleTheme, theme, logs, activeSession, customExercises }) {
   function lastDate(templateId) {
     const entries = logs.filter((l) => l.templateId === templateId);
@@ -18,7 +20,7 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
         <h1>Styrkekollen</h1>
         <div className="home-header-actions">
           <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
-            {theme === "dark" ? "☀️" : theme === "light" ? "🔥" : theme === "ember" ? "✨" : "🌙"}
+            {ICONS[theme] ?? "🌙"}
           </button>
           <button className="logout-btn" onClick={onLogout} title="Logga ut">↩</button>
         </div>

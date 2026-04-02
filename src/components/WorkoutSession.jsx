@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek" };
+const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
 
 export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, onRename, onSave, onAddExercise, onFinish, onCancel, onToggleTheme, theme }) {
   const [editingName, setEditingName] = useState(null);
@@ -129,7 +130,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
         <div className="session-header-right">
           <span className="progress-badge">{totalDone}/{totalSets} set</span>
           <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
-            {theme === "dark" ? "☀️" : theme === "light" ? "🔥" : theme === "ember" ? "✨" : "🌙"}
+            {ICONS[theme] ?? "🌙"}
           </button>
         </div>
       </div>

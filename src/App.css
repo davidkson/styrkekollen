@@ -46,6 +46,20 @@
   --green: #4daa6b;
 }
 
+[data-theme="invit"] {
+  --bg: #161c24;
+  --surface: #212b36;
+  --surface2: #2d3a47;
+  --border: #3a4a5c;
+  --accent: #ad3768;
+  --accent-dim: #7e2b50;
+  --accent2: #3562d7;
+  --text: #ffffff;
+  --muted: #919eab;
+  --danger: #ff5630;
+  --green: #36b37e;
+}
+
 [data-theme="light"] {
   --bg: #f2f2f2;
   --surface: #ffffff;
@@ -1831,4 +1845,116 @@ body {
   color: #fff;
   border: none;
   box-shadow: 0 4px 16px rgba(14,165,233,0.35);
+}
+
+/* ── Invit tema ─────────────────────────────────────── */
+
+[data-theme="invit"] .home h1 {
+  background: linear-gradient(120deg, #ad3768, #3562d7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="invit"] .pass-card,
+[data-theme="invit"] .exercise-card,
+[data-theme="invit"] .history-entry,
+[data-theme="invit"] .edit-exercise-row,
+[data-theme="invit"] .plate-panel,
+[data-theme="invit"] .timer-panel {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Pass cards: rose och blå vänsterkanter */
+[data-theme="invit"] .pass-card-wrapper:nth-child(odd) .pass-card {
+  border-left: 3px solid #ad3768;
+}
+[data-theme="invit"] .pass-card-wrapper:nth-child(even) .pass-card {
+  border-left: 3px solid #3562d7;
+}
+
+[data-theme="invit"] .pass-card:hover {
+  background: #2d3a47;
+  border-color: #ad3768;
+  box-shadow: 0 4px 16px rgba(173,55,104,0.25);
+}
+
+[data-theme="invit"] .finish-btn,
+[data-theme="invit"] .resume-btn,
+[data-theme="invit"] .migrate-btn,
+[data-theme="invit"] .login-btn,
+[data-theme="invit"] .edit-add-btn {
+  background: linear-gradient(135deg, #ad3768, #7e2b50);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(173,55,104,0.4);
+}
+
+[data-theme="invit"] .timer-start-btn {
+  background: linear-gradient(135deg, #3562d7, #1a369a);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(53,98,215,0.4);
+}
+
+[data-theme="invit"] .progress-badge {
+  background: rgba(173,55,104,0.15);
+  border-color: rgba(173,55,104,0.3);
+  color: #da7b98;
+  font-weight: 600;
+}
+
+[data-theme="invit"] .active-session-banner {
+  border-color: #ad3768;
+  box-shadow: 0 4px 20px rgba(173,55,104,0.2);
+}
+
+[data-theme="invit"] .exercise-card {
+  border-left: 3px solid #3562d7;
+}
+
+[data-theme="invit"] .history-entry {
+  border-left: 3px solid #ad3768;
+}
+
+[data-theme="invit"] .session-header h2 {
+  background: linear-gradient(90deg, #ad3768, #3562d7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="invit"] .timer-ring-fill {
+  stroke: #ad3768;
+}
+
+[data-theme="invit"] .history-btn {
+  background: linear-gradient(135deg, #ad3768, #3562d7);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(173,55,104,0.35);
+}
+
+[data-theme="invit"] .plate-fab {
+  background: linear-gradient(135deg, #ad3768, #7e2b50);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(173,55,104,0.4);
+}
+
+[data-theme="invit"] .timer-fab {
+  background: linear-gradient(135deg, #3562d7, #1a369a);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(53,98,215,0.4);
+}
+
+[data-theme="invit"] .duration-badge {
+  background: rgba(173,55,104,0.2);
+  border-color: rgba(173,55,104,0.3);
+  color: #da7b98;
+}
+
+[data-theme="invit"] .subtitle {
+  color: #da7b98;
 }
