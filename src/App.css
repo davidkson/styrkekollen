@@ -92,8 +92,10 @@ body {
 .sticky-timer-bar {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
   z-index: 200;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
