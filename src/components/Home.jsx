@@ -17,7 +17,7 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
   return (
     <div className="home">
       <div className="home-header">
-        <h1>Styrkekollen</h1>
+        <img src="/styrkekollen_logo.svg" alt="Styrkekollen" className="home-logo" />
         <div className="home-header-actions">
           <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
             {ICONS[theme] ?? "🌙"}

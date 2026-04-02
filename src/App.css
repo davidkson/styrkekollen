@@ -1528,6 +1528,11 @@ body {
   margin-bottom: 4px;
 }
 
+.home-logo {
+  height: 56px;
+  width: auto;
+}
+
 .logout-btn {
   background: none;
   border: none;
