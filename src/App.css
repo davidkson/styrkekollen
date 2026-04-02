@@ -99,9 +99,9 @@ body {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
-  height: 44px;
+  gap: 8px;
+  padding: 0 14px;
+  height: 52px;
   backdrop-filter: blur(8px);
   transition: background 0.3s;
 }
@@ -142,18 +142,19 @@ body {
 }
 
 .sticky-timer-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
 .sticky-timer-btn:hover {
@@ -175,7 +176,7 @@ body {
 
 /* Push content down when session bar is visible */
 .app-timer-active {
-  padding-top: 44px;
+  padding-top: 52px;
 }
 
 /* HOME */
