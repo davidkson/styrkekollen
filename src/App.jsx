@@ -17,13 +17,24 @@ import "./App.css";
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const timer = useRestTimer();
+  const [adjStep, setAdjStep] = useState(15);
+  const longPressRef = useRef(null);
+  const [authenticated, setAuthenticated] = useState(() => localStorage.getItem("auth") === "1");
+  const [showMigrate, setShowMigrate] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState([]);
+  const [customNames, setCustomNames] = useState({});
+  const [customExercises, setCustomExercises] = useState({});
+  const [activeSession, setActiveSession] = useState(null);
+  const [view, setView] = useState("home");
+  const [activeTemplate, setActiveTemplate] = useState(null);
+  const debounceRef = useRef(null);
+
   useSwipeBack(() => {
     if (view === "session") cancelWorkout();
     else if (view === "history") setView("home");
     else if (view === "edit") { setView("home"); setActiveTemplate(null); }
   }, view !== "home");
-  const [adjStep, setAdjStep] = useState(15);
-  const longPressRef = useRef(null);
 
   function handleAdjPointerDown() {
     longPressRef.current = setTimeout(() => {
@@ -46,16 +57,6 @@ export default function App() {
       longPressRef.current = null;
     }
   }
-  const [authenticated, setAuthenticated] = useState(() => localStorage.getItem("auth") === "1");
-  const [showMigrate, setShowMigrate] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState([]);
-  const [customNames, setCustomNames] = useState({});
-  const [customExercises, setCustomExercises] = useState({});
-  const [activeSession, setActiveSession] = useState(null);
-  const [view, setView] = useState("home");
-  const [activeTemplate, setActiveTemplate] = useState(null);
-  const debounceRef = useRef(null);
 
   useEffect(() => {
     if (!authenticated) { setLoading(false); return; }
