@@ -243,6 +243,25 @@ body {
   color: var(--muted);
 }
 
+.pass-card-demo {
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.demo-badge {
+  display: inline-block;
+  margin-left: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
 .history-summary {
   margin-top: 24px;
   color: var(--muted);

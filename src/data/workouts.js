@@ -25,4 +25,16 @@ export const workoutTemplates = [
       { id: "e14", name: "Mage: Russian twists (med vikt)", sets: 3, repsRange: "20 reps", rest: "30 sek" },
     ],
   },
+  {
+    id: "demo",
+    name: "Demo",
+    demo: true,
+    exercises: [
+      { id: "d1", name: "Squat", sets: 3, repsRange: "8–10", rest: "90 sek" },
+      { id: "d2", name: "Bänkpress", sets: 3, repsRange: "8–10", rest: "90 sek" },
+      { id: "d3", name: "Marklyft", sets: 3, repsRange: "6–8", rest: "2 min" },
+      { id: "d4", name: "Pull-ups", sets: 3, repsRange: "max", rest: "60 sek" },
+      { id: "d5", name: "Plankan", sets: 3, repsRange: "45 sek", rest: "30 sek" },
+    ],
+  },
 ];

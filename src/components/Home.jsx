@@ -58,11 +58,14 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
               const last = lastDate(t.id);
               return (
                 <div key={t.id} className="pass-card-wrapper">
-                  <button className="pass-card" onClick={() => onStart(t)}>
-                    <div className="pass-card-name">{t.name}</div>
+                  <button className={`pass-card${t.demo ? " pass-card-demo" : ""}`} onClick={() => onStart(t)}>
+                    <div className="pass-card-name">
+                      {t.name}
+                      {t.demo && <span className="demo-badge">DEMO</span>}
+                    </div>
                     <div className="pass-card-meta">
                       {exerciseCount(t)} övningar
-                      {last && <span> · Senast: {last}</span>}
+                      {t.demo ? <span> · Sparas inte</span> : last && <span> · Senast: {last}</span>}
                     </div>
                     <div className="pass-card-arrow">→</div>
                   </button>

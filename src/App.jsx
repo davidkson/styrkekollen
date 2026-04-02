@@ -105,11 +105,12 @@ export default function App() {
       templateName: merged.name,
       startedAt: new Date().toISOString(),
       sets: null,
+      demo: merged.demo ?? false,
     };
     setActiveSession(session);
     setActiveTemplate(merged);
     setView("session");
-    await db.saveActiveSession(session);
+    if (!merged.demo) await db.saveActiveSession(session);
   }
 
   function resumeWorkout() {
@@ -121,22 +122,26 @@ export default function App() {
   function saveSessionState(sets) {
     const updated = { ...activeSession, sets };
     setActiveSession(updated);
+    if (activeSession?.demo) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => db.saveActiveSession(updated), 2000);
   }
 
   async function finishWorkout(log) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    setLogs((prev) => [log, ...prev]);
+    const isDemo = activeSession?.demo;
     setActiveSession(null);
     setView("home");
     setActiveTemplate(null);
-    await Promise.all([db.insertLog(log), db.clearActiveSession()]);
+    if (!isDemo) {
+      setLogs((prev) => [log, ...prev]);
+      await Promise.all([db.insertLog(log), db.clearActiveSession()]);
+    }
   }
 
   async function cancelWorkout() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    await db.saveActiveSession(activeSession);
+    if (!activeSession?.demo) await db.saveActiveSession(activeSession);
     setView("home");
     setActiveTemplate(null);
   }
