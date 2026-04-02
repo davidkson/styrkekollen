@@ -99,23 +99,30 @@ body {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 16px;
+  gap: 10px;
+  padding: 0 12px;
+  height: 44px;
   backdrop-filter: blur(8px);
+  transition: background 0.3s;
+}
+
+.sticky-timer-bar--running {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 }
 
 .sticky-timer-digits {
   font-family: "Orbitron", monospace;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.05em;
   flex-shrink: 0;
+  min-width: 58px;
 }
 
 .sticky-timer-track {
   flex: 1;
-  height: 4px;
+  height: 3px;
   background: var(--surface2);
   border-radius: 999px;
   overflow: hidden;
@@ -128,9 +135,40 @@ body {
   transition: width 1s linear;
 }
 
-/* Push content down when bar is visible */
+.sticky-timer-controls {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.sticky-timer-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sticky-timer-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.sticky-timer-btn--reset {
+  color: var(--muted);
+}
+
+/* Push content down when session bar is visible */
 .app-timer-active {
-  padding-top: 40px;
+  padding-top: 44px;
 }
 
 /* HOME */

@@ -165,12 +165,18 @@ export default function App() {
   }
 
   return (
-    <div className={`app${timer.running ? " app-timer-active" : ""}`}>
-      {timer.running && (
-        <div className="sticky-timer-bar">
+    <div className={`app${view === "session" ? " app-timer-active" : ""}`}>
+      {view === "session" && (
+        <div className={`sticky-timer-bar${timer.running ? " sticky-timer-bar--running" : ""}`}>
           <span className="sticky-timer-digits">{fmt(timer.remaining)}</span>
           <div className="sticky-timer-track">
             <div className="sticky-timer-fill" style={{ width: `${timer.progress * 100}%` }} />
+          </div>
+          <div className="sticky-timer-controls">
+            <button className="sticky-timer-btn" onClick={timer.toggle} title={timer.running ? "Pausa" : "Starta"}>
+              {timer.done ? "↺" : timer.running ? "⏸" : "▶"}
+            </button>
+            <button className="sticky-timer-btn sticky-timer-btn--reset" onClick={timer.reset} title="Börja om">↺</button>
           </div>
         </div>
       )}
