@@ -101,9 +101,9 @@ body {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 6px 0 14px;
-  height: 52px;
+  gap: 10px;
+  padding: 0 8px 0 14px;
+  height: 48px;
   backdrop-filter: blur(8px);
   transition: background 0.3s;
 }
@@ -139,18 +139,20 @@ body {
 
 .sticky-timer-controls {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 5px;
   flex-shrink: 0;
 }
 
+/* Play/pause — filled circle */
 .sticky-timer-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
   background: var(--surface2);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -162,23 +164,45 @@ body {
 .sticky-timer-btn:hover {
   background: var(--accent);
   color: #fff;
-  border-color: transparent;
 }
 
+/* Reset — ghost, smaller */
 .sticky-timer-btn--reset {
+  width: 28px;
+  height: 28px;
+  background: none;
   color: var(--muted);
+  font-size: 0.9rem;
 }
 
+.sticky-timer-btn--reset:hover {
+  background: none;
+  color: var(--text);
+}
+
+/* ±15 — pill shape */
 .sticky-timer-btn--adj {
-  font-size: 0.7rem;
+  width: auto;
+  height: 28px;
+  border-radius: 999px;
+  padding: 0 9px;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--muted);
-  letter-spacing: -0.02em;
+  background: none;
+  border: 1px solid var(--border);
+  letter-spacing: 0;
+}
+
+.sticky-timer-btn--adj:hover {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--accent);
 }
 
 /* Push content down when session bar is visible */
 .app-timer-active {
-  padding-top: 52px;
+  padding-top: 48px;
 }
 
 /* HOME */
