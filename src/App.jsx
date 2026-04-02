@@ -16,6 +16,30 @@ import "./App.css";
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const timer = useRestTimer();
+  const [adjStep, setAdjStep] = useState(15);
+  const longPressRef = useRef(null);
+
+  function handleAdjPointerDown() {
+    longPressRef.current = setTimeout(() => {
+      setAdjStep((s) => (s === 15 ? 5 : 15));
+      longPressRef.current = null;
+    }, 500);
+  }
+
+  function handleAdjPointerUp(delta) {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+      timer.adjust(delta);
+    }
+  }
+
+  function handleAdjPointerLeave() {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
+  }
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("auth") === "1");
   const [showMigrate, setShowMigrate] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -177,8 +201,18 @@ export default function App() {
               {timer.done ? "↺" : timer.running ? "⏸" : "▶"}
             </button>
             <button className="sticky-timer-btn sticky-timer-btn--reset" onClick={timer.reset} title="Börja om">↺</button>
-            <button className="sticky-timer-btn sticky-timer-btn--adj" onClick={() => timer.adjust(-15)} title="-15s">−15</button>
-            <button className="sticky-timer-btn sticky-timer-btn--adj" onClick={() => timer.adjust(+15)} title="+15s">+15</button>
+            <button
+              className="sticky-timer-btn sticky-timer-btn--adj"
+              onPointerDown={handleAdjPointerDown}
+              onPointerUp={() => handleAdjPointerUp(-adjStep)}
+              onPointerLeave={handleAdjPointerLeave}
+            >−{adjStep}</button>
+            <button
+              className="sticky-timer-btn sticky-timer-btn--adj"
+              onPointerDown={handleAdjPointerDown}
+              onPointerUp={() => handleAdjPointerUp(+adjStep)}
+              onPointerLeave={handleAdjPointerLeave}
+            >+{adjStep}</button>
           </div>
         </div>
       )}
