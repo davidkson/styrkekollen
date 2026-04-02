@@ -46,7 +46,7 @@ export default function App() {
       longPressRef.current = null;
     }
   }
-  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("auth") === "1");
+  const [authenticated, setAuthenticated] = useState(() => localStorage.getItem("auth") === "1");
   const [showMigrate, setShowMigrate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState([]);
@@ -236,7 +236,7 @@ export default function App() {
             onStart={startWorkout}
             onResume={resumeWorkout}
             onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
-            onLogout={() => { sessionStorage.removeItem("auth"); setAuthenticated(false); }}
+            onLogout={() => { localStorage.removeItem("auth"); setAuthenticated(false); }}
             theme={theme}
             onToggleTheme={toggleTheme}
           />

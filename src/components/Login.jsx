@@ -7,7 +7,7 @@ export default function Login({ onLogin }) {
   function submit(e) {
     e.preventDefault();
     if (password === import.meta.env.VITE_APP_PASSWORD) {
-      sessionStorage.setItem("auth", "1");
+      localStorage.setItem("auth", "1");
       onLogin();
     } else {
       setError("Fel lösenord");
