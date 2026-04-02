@@ -10,10 +10,12 @@ import RestTimer from "./components/RestTimer";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
 import { useTheme } from "./hooks/useTheme";
+import { useRestTimer, fmt } from "./hooks/useRestTimer";
 import "./App.css";
 
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
+  const timer = useRestTimer();
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem("auth") === "1");
   const [showMigrate, setShowMigrate] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -163,7 +165,15 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app${timer.running ? " app-timer-active" : ""}`}>
+      {timer.running && (
+        <div className="sticky-timer-bar">
+          <span className="sticky-timer-digits">{fmt(timer.remaining)}</span>
+          <div className="sticky-timer-track">
+            <div className="sticky-timer-fill" style={{ width: `${timer.progress * 100}%` }} />
+          </div>
+        </div>
+      )}
       {view === "home" && (
         <>
           <Home
@@ -217,7 +227,7 @@ export default function App() {
           onUpdateTimestamps={updateLogTimestamps}
         />
       )}
-      <RestTimer />
+      <RestTimer {...timer} />
       <PlateCalculator />
     </div>
   );
