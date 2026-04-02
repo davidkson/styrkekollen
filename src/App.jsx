@@ -11,11 +11,17 @@ import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
 import { useTheme } from "./hooks/useTheme";
 import { useRestTimer, fmt } from "./hooks/useRestTimer";
+import { useSwipeBack } from "./hooks/useSwipeBack";
 import "./App.css";
 
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const timer = useRestTimer();
+  useSwipeBack(() => {
+    if (view === "session") cancelWorkout();
+    else if (view === "history") setView("home");
+    else if (view === "edit") { setView("home"); setActiveTemplate(null); }
+  }, view !== "home");
   const [adjStep, setAdjStep] = useState(15);
   const longPressRef = useRef(null);
 

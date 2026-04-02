@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { haptic } from "../lib/haptic";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek" };
 const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
@@ -117,8 +118,11 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
       })
     );
     if (becomingDone) {
+      haptic(40);
       const restSeconds = parseRestSeconds(exercises[exIdx]?.rest);
       if (restSeconds) onAutoStartTimer(restSeconds);
+    } else {
+      haptic(15);
     }
   }
 
