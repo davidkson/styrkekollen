@@ -173,10 +173,12 @@ export default function App() {
             <div className="sticky-timer-fill" style={{ width: `${timer.progress * 100}%` }} />
           </div>
           <div className="sticky-timer-controls">
+            <button className="sticky-timer-btn sticky-timer-btn--adj" onClick={() => timer.adjust(-15)} title="-15s">−15</button>
             <button className="sticky-timer-btn" onClick={timer.toggle} title={timer.running ? "Pausa" : "Starta"}>
               {timer.done ? "↺" : timer.running ? "⏸" : "▶"}
             </button>
             <button className="sticky-timer-btn sticky-timer-btn--reset" onClick={timer.reset} title="Börja om">↺</button>
+            <button className="sticky-timer-btn sticky-timer-btn--adj" onClick={() => timer.adjust(+15)} title="+15s">+15</button>
           </div>
         </div>
       )}

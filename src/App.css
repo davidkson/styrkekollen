@@ -166,6 +166,13 @@ body {
   color: var(--muted);
 }
 
+.sticky-timer-btn--adj {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: -0.02em;
+}
+
 /* Push content down when session bar is visible */
 .app-timer-active {
   padding-top: 44px;
