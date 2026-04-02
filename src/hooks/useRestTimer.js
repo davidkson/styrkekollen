@@ -75,5 +75,13 @@ export function useRestTimer() {
     setRemaining(preset);
   }
 
-  return { preset, remaining, running, done, progress: remaining / preset, toggle, reset, selectPreset, adjust };
+  function autoStart(seconds) {
+    clearInterval(intervalRef.current);
+    setPreset(seconds);
+    setRemaining(seconds);
+    setDone(false);
+    setRunning(true);
+  }
+
+  return { preset, remaining, running, done, progress: remaining / preset, toggle, reset, selectPreset, adjust, autoStart };
 }

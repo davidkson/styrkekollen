@@ -262,6 +262,7 @@ export default function App() {
           onCancel={cancelWorkout}
           onToggleTheme={toggleTheme}
           theme={theme}
+          onAutoStartTimer={timer.autoStart}
         />
       )}
       {view === "history" && (
