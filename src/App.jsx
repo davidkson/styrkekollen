@@ -25,6 +25,7 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [customNames, setCustomNames] = useState({});
   const [customExercises, setCustomExercises] = useState({});
+  const [customTemplates, setCustomTemplates] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [view, setView] = useState("home");
   const [activeTemplate, setActiveTemplate] = useState(null);
@@ -66,16 +67,32 @@ export default function App() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [logsData, customEx, names, session] = await Promise.all([
+      let [logsData, customEx, names, session, customTpls] = await Promise.all([
         db.getLogs(),
         db.getCustomExercises(),
         db.getExerciseNames(),
         db.getActiveSession(),
+        db.getCustomTemplates(),
       ]);
+
+      // Seed built-in templates to DB on first run
+      const builtins = workoutTemplates.filter((t) => !t.demo);
+      const seedOps = builtins.flatMap((t) => {
+        const ops = [];
+        if (!customTpls.find((c) => c.id === t.id)) ops.push(db.upsertCustomTemplate({ id: t.id, name: t.name }));
+        if (!customEx[t.id]) ops.push(db.upsertCustomExercises(t.id, t.exercises));
+        return ops;
+      });
+      if (seedOps.length) {
+        await Promise.all(seedOps);
+        [customTpls, customEx] = await Promise.all([db.getCustomTemplates(), db.getCustomExercises()]);
+      }
+
       setLogs(logsData);
       setCustomExercises(customEx);
       setCustomNames(names);
       setActiveSession(session);
+      setCustomTemplates(customTpls);
     } finally {
       setLoading(false);
     }
@@ -84,7 +101,7 @@ export default function App() {
   function mergedTemplate(template) {
     return {
       ...template,
-      exercises: [...template.exercises, ...(customExercises[template.id] ?? [])],
+      exercises: [...(template.exercises ?? []), ...(customExercises[template.id] ?? [])],
     };
   }
 
@@ -105,6 +122,14 @@ export default function App() {
     await db.upsertCustomExercises(templateId, updated);
   }
 
+  async function updateExercise(templateId, exerciseId, changes) {
+    const updated = (customExercises[templateId] ?? []).map((e) =>
+      e.id === exerciseId ? { ...e, ...changes } : e
+    );
+    setCustomExercises((prev) => ({ ...prev, [templateId]: updated }));
+    await db.upsertCustomExercises(templateId, updated);
+  }
+
   async function startWorkout(template) {
     const merged = mergedTemplate(template);
     const session = {
@@ -121,9 +146,36 @@ export default function App() {
   }
 
   function resumeWorkout() {
-    const template = workoutTemplates.find((t) => t.id === activeSession.templateId);
+    const template =
+      workoutTemplates.find((t) => t.demo && t.id === activeSession.templateId) ??
+      customTemplates.find((t) => t.id === activeSession.templateId);
     setActiveTemplate(mergedTemplate(template));
     setView("session");
+  }
+
+  async function createTemplate(name) {
+    const t = { id: crypto.randomUUID(), name, exercises: [] };
+    setCustomTemplates((prev) => [...prev, t]);
+    await db.upsertCustomTemplate(t);
+    return t;
+  }
+
+  async function duplicateTemplate(template) {
+    const newId = crypto.randomUUID();
+    const newTemplate = { id: newId, name: `${template.name} (kopia)`, exercises: [] };
+    const exercises = [...template.exercises, ...(customExercises[template.id] ?? [])];
+    setCustomTemplates((prev) => [...prev, newTemplate]);
+    if (exercises.length > 0) {
+      setCustomExercises((prev) => ({ ...prev, [newId]: exercises }));
+      await db.upsertCustomExercises(newId, exercises);
+    }
+    await db.upsertCustomTemplate(newTemplate);
+  }
+
+  async function removeCustomTemplate(id) {
+    setCustomTemplates((prev) => prev.filter((t) => t.id !== id));
+    setCustomExercises((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    await Promise.all([db.deleteCustomTemplate(id), db.deleteCustomExercisesForTemplate(id)]);
   }
 
   function saveSessionState(sets) {
@@ -151,6 +203,14 @@ export default function App() {
     if (!activeSession?.demo) await db.saveActiveSession(activeSession);
     setView("home");
     setActiveTemplate(null);
+  }
+
+  async function abandonWorkout() {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setActiveSession(null);
+    setView("home");
+    setActiveTemplate(null);
+    if (!activeSession?.demo) await db.clearActiveSession();
   }
 
   async function deleteLog(id) {
@@ -233,10 +293,14 @@ export default function App() {
           <Home
             logs={logs}
             customExercises={customExercises}
+            customTemplates={customTemplates}
             activeSession={activeSession}
             onStart={startWorkout}
             onResume={resumeWorkout}
             onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
+            onCreateTemplate={async (name) => { const t = await createTemplate(name); setActiveTemplate(t); setView("edit"); }}
+            onDuplicateTemplate={duplicateTemplate}
+            onDeleteTemplate={removeCustomTemplate}
             onLogout={() => { localStorage.removeItem("auth"); setAuthenticated(false); }}
             theme={theme}
             onToggleTheme={toggleTheme}
@@ -252,6 +316,8 @@ export default function App() {
           customExercises={customExercises[activeTemplate.id]}
           onAdd={(ex) => addExercise(activeTemplate.id, ex)}
           onRemove={(id) => removeExercise(activeTemplate.id, id)}
+          onReorder={(ordered) => { setCustomExercises((prev) => ({ ...prev, [activeTemplate.id]: ordered })); db.upsertCustomExercises(activeTemplate.id, ordered); }}
+          onUpdate={(id, changes) => updateExercise(activeTemplate.id, id, changes)}
           onBack={() => { setView("home"); setActiveTemplate(null); }}
         />
       )}
@@ -267,6 +333,7 @@ export default function App() {
           onAddExercise={(ex) => addExercise(activeTemplate.id, ex)}
           onFinish={finishWorkout}
           onCancel={cancelWorkout}
+          onAbandon={abandonWorkout}
           onToggleTheme={toggleTheme}
           theme={theme}
           onAutoStartTimer={timer.autoStart}

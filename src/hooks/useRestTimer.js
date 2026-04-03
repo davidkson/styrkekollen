@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 function beep() {
+  navigator.vibrate?.([100, 60, 100, 60, 200]);
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     [0, 0.25, 0.5].forEach((t) => {

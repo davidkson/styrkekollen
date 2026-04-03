@@ -16,6 +16,7 @@ export async function getLogs() {
     startedAt: row.started_at ?? null,
     finishedAt: row.finished_at ?? null,
     exercises: row.exercises,
+    note: row.note ?? null,
   }));
 }
 
@@ -28,6 +29,7 @@ export async function insertLog(log) {
     started_at: log.startedAt ?? null,
     finished_at: log.finishedAt ?? null,
     exercises: log.exercises,
+    note: log.note ?? null,
   });
   if (error) throw error;
 }
@@ -72,6 +74,34 @@ export async function upsertExerciseName(exerciseId, name) {
   const { error } = await supabase
     .from("exercise_names")
     .upsert({ exercise_id: exerciseId, name });
+  if (error) throw error;
+}
+
+// --- Custom templates ---
+
+export async function getCustomTemplates() {
+  const { data, error } = await supabase
+    .from("custom_templates")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ id: row.id, name: row.name, exercises: [] }));
+}
+
+export async function upsertCustomTemplate(template) {
+  const { error } = await supabase
+    .from("custom_templates")
+    .upsert({ id: template.id, name: template.name });
+  if (error) throw error;
+}
+
+export async function deleteCustomTemplate(id) {
+  const { error } = await supabase.from("custom_templates").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteCustomExercisesForTemplate(templateId) {
+  const { error } = await supabase.from("custom_exercises").delete().eq("template_id", templateId);
   if (error) throw error;
 }
 

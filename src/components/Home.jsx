@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { workoutTemplates } from "../data/workouts";
 
 const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
+const demoTemplates = workoutTemplates.filter((t) => t.demo);
 
-export default function Home({ onStart, onResume, onEdit, onLogout, onToggleTheme, theme, logs, activeSession, customExercises }) {
+export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDuplicateTemplate, onDeleteTemplate, onLogout, onToggleTheme, theme, logs, activeSession, customExercises, customTemplates }) {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+
   function lastDate(templateId) {
     const entries = logs.filter((l) => l.templateId === templateId);
     if (!entries.length) return null;
@@ -13,6 +19,23 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
   function exerciseCount(t) {
     return t.exercises.length + (customExercises?.[t.id]?.length ?? 0);
   }
+
+  async function submitCreate(e) {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    await onCreateTemplate(newName.trim());
+    setNewName("");
+    setShowCreateForm(false);
+  }
+
+  const allTemplates = [
+    ...(customTemplates ?? []),
+    ...demoTemplates,
+  ];
+
+  const builtinIds = new Set(["pass1", "pass2", "pass3"]);
+  const isCustom = (t) => !t.demo && (customTemplates ?? []).some((c) => c.id === t.id);
+  const isUserCreated = (t) => isCustom(t) && !builtinIds.has(t.id);
 
   return (
     <div className="home">
@@ -42,7 +65,7 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
           </div>
           <p className="subtitle blocked-subtitle">Avsluta pågående pass innan du startar ett nytt</p>
           <div className="pass-list">
-            {workoutTemplates.map((t) => (
+            {allTemplates.map((t) => (
               <div key={t.id} className="pass-card pass-card-blocked">
                 <div className="pass-card-name">{t.name}</div>
                 <div className="pass-card-meta">{exerciseCount(t)} övningar</div>
@@ -54,14 +77,16 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
         <>
           <p className="subtitle">Välj ett pass för att börja logga</p>
           <div className="pass-list">
-            {workoutTemplates.map((t) => {
+            {allTemplates.map((t) => {
               const last = lastDate(t.id);
+              const custom = isCustom(t);
               return (
                 <div key={t.id} className="pass-card-wrapper">
-                  <button className={`pass-card${t.demo ? " pass-card-demo" : ""}`} onClick={() => onStart(t)}>
+                  <button className={`pass-card${t.demo ? " pass-card-demo" : ""}${custom ? " pass-card-custom" : ""}`} onClick={() => onStart(t)}>
                     <div className="pass-card-name">
                       {t.name}
                       {t.demo && <span className="demo-badge">DEMO</span>}
+                      {isUserCreated(t) && <span className="custom-badge">Egen</span>}
                     </div>
                     <div className="pass-card-meta">
                       {exerciseCount(t)} övningar
@@ -69,12 +94,46 @@ export default function Home({ onStart, onResume, onEdit, onLogout, onToggleThem
                     </div>
                     <div className="pass-card-arrow">→</div>
                   </button>
-                  <button className="pass-edit-btn" onClick={() => onEdit(t)} title="Redigera pass">
-                    ✎
-                  </button>
+                  <div className="pass-card-side-btns">
+                    {!t.demo && (
+                      <button className="pass-edit-btn" onClick={() => onEdit(t)} title="Redigera pass">✎</button>
+                    )}
+                    <button className="pass-dup-btn" onClick={() => onDuplicateTemplate(t)} title="Duplicera pass">⧉</button>
+                    {custom && (
+                      confirmingDeleteId === t.id ? (
+                        <div className="delete-confirm">
+                          <span>Ta bort?</span>
+                          <button className="delete-confirm-yes" onClick={() => { onDeleteTemplate(t.id); setConfirmingDeleteId(null); }}>Ja</button>
+                          <button className="delete-confirm-no" onClick={() => setConfirmingDeleteId(null)}>Nej</button>
+                        </div>
+                      ) : (
+                        <button className="pass-delete-btn" onClick={() => setConfirmingDeleteId(t.id)} title="Ta bort pass">✕</button>
+                      )
+                    )}
+                  </div>
                 </div>
               );
             })}
+
+            {showCreateForm ? (
+              <form className="create-template-form" onSubmit={submitCreate}>
+                <input
+                  className="edit-input"
+                  placeholder="Namn på passet"
+                  value={newName}
+                  autoFocus
+                  onChange={(e) => setNewName(e.target.value)}
+                />
+                <div className="create-template-actions">
+                  <button type="button" className="inline-cancel-btn" onClick={() => { setShowCreateForm(false); setNewName(""); }}>Avbryt</button>
+                  <button type="submit" className="edit-add-btn" disabled={!newName.trim()}>Skapa & lägg till övningar</button>
+                </div>
+              </form>
+            ) : (
+              <button className="create-template-btn" onClick={() => setShowCreateForm(true)}>
+                + Nytt pass
+              </button>
+            )}
           </div>
           {logs.length > 0 && (
             <div className="history-summary">
