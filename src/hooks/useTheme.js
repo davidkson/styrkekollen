@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-const THEMES = ["dark", "light", "ember", "fresh", "invit"];
-const ICONS  = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
+const THEMES = ["dark", "light", "ember", "fresh", "invit", "glass"];
+const ICONS  = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸", glass: "💎" };
 
 export function useTheme() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") ?? "dark");

@@ -73,6 +73,24 @@
   --green: #2e7d32;
 }
 
+[data-theme="glass"] {
+  --bg: #0a0a1a;
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface2: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.15);
+  --accent: #60a5fa;
+  --accent-dim: #3b82f6;
+  --text: #f0f0ff;
+  --muted: rgba(255, 255, 255, 0.5);
+  --danger: #f87171;
+  --green: #4ade80;
+  --radius: 16px;
+  --glass-blur: 20px;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -3015,4 +3033,217 @@ button {
 
 .suggest-apply-btn:active {
   opacity: 0.85;
+}
+
+/* ── Liquid Glass Theme ── */
+
+[data-theme="glass"] body {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(96, 165, 250, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    #0a0a1a;
+  background-attachment: fixed;
+}
+
+[data-theme="glass"] .app {
+  background: transparent;
+}
+
+/* Glass surfaces — cards, panels, inputs */
+[data-theme="glass"] .exercise-card,
+[data-theme="glass"] .history-entry,
+[data-theme="glass"] .plate-panel,
+[data-theme="glass"] .suggest-panel,
+[data-theme="glass"] .progress-session,
+[data-theme="glass"] .progress-summary-stat,
+[data-theme="glass"] .progress-exercise-item,
+[data-theme="glass"] .inline-add-form,
+[data-theme="glass"] .finish-panel,
+[data-theme="glass"] .session-stats-bar,
+[data-theme="glass"] .template-card,
+[data-theme="glass"] .abandon-confirm {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+/* Sticky timer bar glass */
+[data-theme="glass"] .sticky-timer-bar {
+  background: rgba(10, 10, 26, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Input fields glass */
+[data-theme="glass"] .set-row input,
+[data-theme="glass"] .plate-input,
+[data-theme="glass"] .edit-input,
+[data-theme="glass"] .name-edit-input,
+[data-theme="glass"] .session-note,
+[data-theme="glass"] .exercise-comment,
+[data-theme="glass"] .progress-search {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+[data-theme="glass"] .set-row input:focus,
+[data-theme="glass"] .plate-input:focus,
+[data-theme="glass"] .edit-input:focus,
+[data-theme="glass"] .name-edit-input:focus,
+[data-theme="glass"] .session-note:focus,
+[data-theme="glass"] .exercise-comment:focus,
+[data-theme="glass"] .progress-search:focus {
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.15);
+}
+
+/* Buttons glass */
+[data-theme="glass"] .done-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="glass"] .done-btn.done-active {
+  background: rgba(96, 165, 250, 0.25);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+[data-theme="glass"] .finish-btn,
+[data-theme="glass"] .suggest-apply-btn {
+  background: rgba(96, 165, 250, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  color: #ffffff;
+}
+
+[data-theme="glass"] .history-btn,
+[data-theme="glass"] .progress-nav-btn {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+}
+
+[data-theme="glass"] .back-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.4rem 0.75rem;
+}
+
+[data-theme="glass"] .set-adjust-btn,
+[data-theme="glass"] .superset-btn,
+[data-theme="glass"] .suggest-btn,
+[data-theme="glass"] .add-exercise-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Rest timer FAB glass */
+[data-theme="glass"] .timer-fab,
+[data-theme="glass"] .plate-fab {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Session header glass */
+[data-theme="glass"] .session-header {
+  background: transparent;
+}
+
+/* Sticky timer bar controls */
+[data-theme="glass"] .sticky-timer-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Progress bar */
+[data-theme="glass"] .progress-bar-track,
+[data-theme="glass"] .session-progress-bar,
+[data-theme="glass"] .sticky-timer-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="glass"] .progress-bar-fill,
+[data-theme="glass"] .session-progress-fill,
+[data-theme="glass"] .sticky-timer-fill {
+  background: linear-gradient(90deg, var(--accent), #a78bfa);
+}
+
+/* Plate calculator chips */
+[data-theme="glass"] .plate-chip,
+[data-theme="glass"] .suggest-plate-chip,
+[data-theme="glass"] .history-set-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Home title */
+[data-theme="glass"] .home-title {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Template cards hover glow */
+[data-theme="glass"] .template-card:active {
+  box-shadow: var(--glass-shadow), var(--glass-highlight), 0 0 20px rgba(96, 165, 250, 0.15);
+}
+
+/* Login screen */
+[data-theme="glass"] .login {
+  background: transparent;
+}
+
+[data-theme="glass"] .login input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Tabs */
+[data-theme="glass"] .plate-tab {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="glass"] .plate-tab-active {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+/* Delete/confirm buttons */
+[data-theme="glass"] .delete-confirm-yes {
+  background: rgba(248, 113, 113, 0.25);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+[data-theme="glass"] .delete-confirm-no {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Backdrop-filter fallback */
+@supports not (backdrop-filter: blur(1px)) {
+  [data-theme="glass"] .exercise-card,
+  [data-theme="glass"] .history-entry,
+  [data-theme="glass"] .template-card,
+  [data-theme="glass"] .plate-panel,
+  [data-theme="glass"] .suggest-panel,
+  [data-theme="glass"] .progress-session,
+  [data-theme="glass"] .progress-summary-stat,
+  [data-theme="glass"] .progress-exercise-item,
+  [data-theme="glass"] .finish-panel,
+  [data-theme="glass"] .session-stats-bar,
+  [data-theme="glass"] .sticky-timer-bar {
+    background: rgba(20, 20, 40, 0.92);
+  }
 }
