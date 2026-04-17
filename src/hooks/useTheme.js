@@ -4,7 +4,7 @@ const THEMES = ["dark", "light", "ember", "fresh", "invit", "glass"];
 const ICONS  = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸", glass: "💎" };
 
 export function useTheme() {
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") ?? "dark");
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") ?? "glass");
 
   function toggle() {
     const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
