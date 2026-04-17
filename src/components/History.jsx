@@ -52,7 +52,7 @@ function getPRs(log, allLogs) {
   return prs;
 }
 
-export default function History({ logs, customNames, customExercises, onBack, onDelete, onUpdateTimestamps }) {
+export default function History({ logs, customNames, customExercises, onBack, onDelete, onUpdateTimestamps, onProgress }) {
   const [confirmingId, setConfirmingId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editStart, setEditStart] = useState("");
@@ -92,6 +92,12 @@ export default function History({ logs, customNames, customExercises, onBack, on
         <h2>Historik</h2>
         <span />
       </div>
+
+      {logs.length > 0 && (
+        <button className="progress-nav-btn" onClick={onProgress}>
+          📈 Övningsutveckling
+        </button>
+      )}
 
       {sorted.length === 0 && <p className="empty">Inga pass loggade ännu.</p>}
 

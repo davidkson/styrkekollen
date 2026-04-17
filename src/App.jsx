@@ -3,6 +3,7 @@ import Home from "./components/Home";
 import WorkoutSession from "./components/WorkoutSession";
 import History from "./components/History";
 import EditPass from "./components/EditPass";
+import ExerciseProgress from "./components/ExerciseProgress";
 import Login from "./components/Login";
 import MigratePrompt from "./components/MigratePrompt";
 import PlateCalculator from "./components/PlateCalculator";
@@ -336,7 +337,6 @@ export default function App() {
           onAbandon={abandonWorkout}
           onToggleTheme={toggleTheme}
           theme={theme}
-          onAutoStartTimer={timer.autoStart}
         />
       )}
       {view === "history" && (
@@ -347,6 +347,15 @@ export default function App() {
           onBack={() => setView("home")}
           onDelete={deleteLog}
           onUpdateTimestamps={updateLogTimestamps}
+          onProgress={() => setView("progress")}
+        />
+      )}
+      {view === "progress" && (
+        <ExerciseProgress
+          logs={logs}
+          customNames={customNames}
+          customExercises={customExercises}
+          onBack={() => setView("history")}
         />
       )}
       <RestTimer {...timer} />
