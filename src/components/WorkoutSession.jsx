@@ -4,6 +4,54 @@ import { haptic } from "../lib/haptic";
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek", bodyweight: false };
 const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
 
+const BAR_WEIGHT = 17;
+const PLATES = [20, 15, 10, 5, 2.5, 1.25, 0.5];
+
+function calcPlates(target) {
+  const perSide = (target - BAR_WEIGHT) / 2;
+  if (perSide < 0) return null;
+  const result = [];
+  let remaining = Math.round(perSide * 1000) / 1000;
+  for (const plate of PLATES) {
+    if (remaining <= 0) break;
+    const count = Math.floor(Math.round((remaining / plate) * 1000) / 1000);
+    if (count > 0) {
+      result.push({ plate, count });
+      remaining = Math.round((remaining - plate * count) * 1000) / 1000;
+    }
+  }
+  if (remaining > 0.001) return null;
+  return result;
+}
+
+function analyzeSuggestion(exSets, repsRange) {
+  const rangeMatch = repsRange?.match(/(\d+)[–-](\d+)/);
+  const minReps = rangeMatch ? parseInt(rangeMatch[1]) : null;
+  const maxReps = rangeMatch ? parseInt(rangeMatch[2]) : null;
+
+  const prevSets = exSets.filter(s => s.prevWeight && s.prevReps);
+  if (prevSets.length === 0) return null;
+
+  const prevWeight = parseFloat(prevSets[0].prevWeight);
+  if (!prevWeight || prevWeight <= 0) return null;
+
+  const prevReps = prevSets.map(s => parseInt(s.prevReps) || 0);
+
+  const step = prevWeight >= 100 ? 5 : 2.5;
+
+  if (maxReps && prevReps.every(r => r >= maxReps)) {
+    const suggested = prevWeight + step;
+    return { action: "increase", suggested, prevWeight, reason: `Alla set klarade ${maxReps}+ reps — dags att öka!` };
+  }
+
+  if (minReps && prevReps.filter(r => r < minReps).length >= 2) {
+    const suggested = prevWeight - step;
+    return { action: "decrease", suggested: Math.max(BAR_WEIGHT, suggested), prevWeight, reason: `Missade ${minReps} reps på flera set — sänk vikten` };
+  }
+
+  return { action: "maintain", suggested: prevWeight, prevWeight, reason: "Bra jobbat — kör samma vikt och sikta på fler reps" };
+}
+
 function parseRestSeconds(restStr) {
   if (!restStr || restStr === "—") return null;
   const minMatch = restStr.match(/(\d+)(?:[–-]\d+)?\s*min/i);
@@ -25,6 +73,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
   const [supersets, setSupersets] = useState(new Set());
+  const [suggestIdx, setSuggestIdx] = useState(null);
 
   const cardRefs = useRef([]);
   const [exercises, setExercises] = useState(() => [...template.exercises]);
@@ -276,6 +325,77 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                   </button>
                 )}
               </div>
+
+              {!ex.bodyweight && sets[exIdx]?.sets.some(s => s.prevWeight) && (
+                <div className="suggest-section">
+                  <button
+                    className={`suggest-btn${suggestIdx === exIdx ? " suggest-btn--active" : ""}`}
+                    onClick={() => setSuggestIdx(suggestIdx === exIdx ? null : exIdx)}
+                  >
+                    {suggestIdx === exIdx ? "✕ Stäng" : "💡 Föreslå vikter"}
+                  </button>
+
+                  {suggestIdx === exIdx && (() => {
+                    const suggestion = analyzeSuggestion(sets[exIdx].sets, ex.repsRange);
+                    if (!suggestion) return <div className="suggest-panel"><p className="suggest-no-data">Inte tillräckligt med data från förra passet.</p></div>;
+
+                    const plates = calcPlates(suggestion.suggested);
+                    const perSide = plates ? (suggestion.suggested - BAR_WEIGHT) / 2 : null;
+
+                    return (
+                      <div className="suggest-panel">
+                        <div className={`suggest-action suggest-action--${suggestion.action}`}>
+                          {suggestion.action === "increase" && "📈 Öka vikt"}
+                          {suggestion.action === "maintain" && "➡️ Behåll vikt"}
+                          {suggestion.action === "decrease" && "📉 Sänk vikt"}
+                        </div>
+                        <div className="suggest-reason">{suggestion.reason}</div>
+                        <div className="suggest-weight">
+                          {suggestion.prevWeight}kg → <strong>{suggestion.suggested}kg</strong>
+                        </div>
+                        {plates && (
+                          <div className="suggest-plates">
+                            <div className="suggest-plates-label">Skivor per sida ({perSide} kg):</div>
+                            <div className="suggest-plates-chips">
+                              {plates.map(({ plate, count }) => (
+                                <span key={plate} className="suggest-plate-chip">{plate}kg × {count}</span>
+                              ))}
+                            </div>
+                            <div className="plate-visual">
+                              {plates.flatMap(({ plate, count }) =>
+                                Array.from({ length: count }, (_, i) => (
+                                  <div key={`${plate}-${i}`} className="plate-disc" style={{ "--h": `${Math.max(20, Math.min(64, plate * 3))}px` }}>
+                                    {plate}
+                                  </div>
+                                ))
+                              )}
+                              <div className="plate-bar-end" />
+                            </div>
+                          </div>
+                        )}
+                        {!plates && suggestion.suggested > BAR_WEIGHT && (
+                          <div className="suggest-plates-label">Kan inte nås exakt med tillgängliga skivor</div>
+                        )}
+                        {suggestion.suggested <= BAR_WEIGHT && (
+                          <div className="suggest-plates-label">Bara stången ({BAR_WEIGHT} kg)</div>
+                        )}
+                        <button
+                          className="suggest-apply-btn"
+                          onClick={() => {
+                            setSets(prev => prev.map((exData, i) => {
+                              if (i !== exIdx) return exData;
+                              return { ...exData, sets: exData.sets.map(s => ({ ...s, weight: String(suggestion.suggested) })) };
+                            }));
+                            setSuggestIdx(null);
+                          }}
+                        >
+                          Använd {suggestion.suggested}kg på alla set
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               <div className={`sets-grid${ex.bodyweight ? " sets-grid--bw" : ""}`}>
                 <div className="sets-header">
