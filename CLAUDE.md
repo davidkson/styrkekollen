@@ -6,7 +6,7 @@ Svensk PWA för styrketräningsloggning.
 
 - React 19 + Vite 8 (ES modules)
 - Supabase (PostgreSQL BaaS) för persistens
-- Ren CSS med variabler (5 teman: dark, light, ember, fresh, invit)
+- Ren CSS med variabler (6 teman: dark, light, ember, fresh, invit, glass — glass är default)
 - Ingen router — vyhantering via `view`-state i App.jsx
 - Ingen state management-lib — React hooks + localStorage + Supabase
 
@@ -21,6 +21,7 @@ Svensk PWA för styrketräningsloggning.
 | session | WorkoutSession.jsx | Aktiv träningsloggning |
 | edit | EditPass.jsx | Redigera mallar/övningar |
 | history | History.jsx | Träningshistorik, PR, 1RM |
+| progress | ExerciseProgress.jsx | Övningsutveckling över tid |
 
 ### Nyckelkomponenter
 
@@ -53,8 +54,31 @@ Svensk PWA för styrketräningsloggning.
 - Session-state debounce 2s innan Supabase-sparning
 - Mobilfokus: viewport-fit=cover, swipe, haptics, 16px inputs
 
+### Slack-integration
+
+- Cloudflare Worker i `slack-worker/` tar emot meddelanden från Slack-kanal `#styrkekollen-issues`
+- Meddelanden skapar automatiskt GitHub issues i repot
+- Första raden = titel, resten = body, hashtags = labels
+- Boten svarar i tråden med länk till issuet
+
 ## Arbetsflöde
 
 - Jag (Claude) tar rollen som senior utvecklare med övergripande kunskap
 - Arbete delegeras till subagenter för implementation
 - Svenska i UI, engelska i kod
+
+### Issue-hantering
+
+1. **Diskutera** — prata igenom feature/bugg
+2. **Issue** — skapa GitHub issue med tydlig beskrivning
+3. **Delegera** — skicka till subagent för implementation
+4. **Review** — granska resultat innan vi är klara
+
+### Issues från Slack
+
+Issues som skapas via Slack-kanalen kan vara kortfattade eller otydliga. Innan delegering till subagent:
+
+1. **Läs och förstå** — tolka issuet i kontexten av appens arkitektur
+2. **Verifiera med användaren** — ställ frågor om scope, beteende och avgränsningar
+3. **Uppdatera issuet** — komplettera med teknisk specifikation
+4. **Delegera först efter godkännande** — användaren måste bekräfta innan implementation startar
