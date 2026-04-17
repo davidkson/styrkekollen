@@ -13,7 +13,7 @@ function parseRestSeconds(restStr) {
   return null;
 }
 
-export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme, theme, onAutoStartTimer }) {
+export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme, theme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [sessionNote, setSessionNote] = useState("");
@@ -38,7 +38,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
         previousComment: prevEx?.comment ?? "",
         sets: Array.from({ length: ex.sets }, (_, i) => {
           const prev = prevEx?.sets?.[i];
-          return { weight: "", reps: "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
+          return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
         }),
       };
     });
@@ -157,8 +157,6 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
     );
     if (becomingDone) {
       haptic(40);
-      const restSeconds = parseRestSeconds(exercises[exIdx]?.rest);
-      if (restSeconds) onAutoStartTimer(restSeconds);
       if (allDoneAfter && !focusMode && exIdx < exercises.length - 1) {
         setTimeout(() => {
           cardRefs.current[exIdx + 1]?.scrollIntoView({ behavior: "smooth", block: "start" });

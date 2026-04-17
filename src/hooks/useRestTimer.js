@@ -64,7 +64,13 @@ export function useRestTimer() {
   }
 
   function toggle() {
-    if (done) { reset(); return; }
+    if (done) {
+      clearInterval(intervalRef.current);
+      setRemaining(preset);
+      setDone(false);
+      setRunning(true);
+      return;
+    }
     setRunning((r) => !r);
     setDone(false);
   }
