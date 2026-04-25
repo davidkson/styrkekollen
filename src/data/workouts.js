@@ -26,6 +26,20 @@ export const workoutTemplates = [
     ],
   },
   {
+    id: "pass2b",
+    name: "Pass 2B — Rygg / Biceps (utan marklyft)",
+    exercises: [
+      { id: "e2b1", name: "Hantelrodd (enarms)", sets: 4, repsRange: "8–12", rest: "60–90 sek" },
+      { id: "e2b2", name: "Pull-ups / Chin-ups", sets: 4, repsRange: "max", rest: "90 sek" },
+      { id: "e2b3", name: "Skivstångsrodd", sets: 3, repsRange: "6–10", rest: "60–90 sek" },
+      { id: "e2b4", name: "Omvänd rodd (rear delt row, hantlar)", sets: 3, repsRange: "10–15", rest: "45–60 sek" },
+      { id: "e2b5", name: "Reverse flyes (hantlar)", sets: 3, repsRange: "15–20", rest: "45 sek" },
+      { id: "e2b6", name: "Bicepscurl (skivstång eller hantlar)", sets: 3, repsRange: "8–12", rest: "45–60 sek" },
+      { id: "e2b7", name: "Mage: Sit-ups / crunches", sets: 3, repsRange: "15–20", rest: "30–45 sek" },
+      { id: "e2b8", name: "Mage: Russian twists (med vikt)", sets: 3, repsRange: "20 reps", rest: "30 sek" },
+    ],
+  },
+  {
     id: "demo",
     name: "Demo",
     demo: true,
