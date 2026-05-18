@@ -308,6 +308,14 @@ button {
   color: var(--muted);
 }
 
+.pass-card-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  opacity: 0.75;
+  padding: 4px 8px 0;
+  text-align: center;
+}
+
 .pass-card-demo {
   border-style: dashed;
   opacity: 0.8;

@@ -33,7 +33,7 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
     ...demoTemplates,
   ];
 
-  const builtinIds = new Set(["pass1", "pass2", "pass3"]);
+  const builtinIds = new Set(["pass1", "pass2", "pass2b", "pass3"]);
   const isCustom = (t) => !t.demo && (customTemplates ?? []).some((c) => c.id === t.id);
   const isUserCreated = (t) => isCustom(t) && !builtinIds.has(t.id);
 
@@ -81,36 +81,41 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
               const last = lastDate(t.id);
               const custom = isCustom(t);
               return (
-                <div key={t.id} className="pass-card-wrapper">
-                  <button className={`pass-card${t.demo ? " pass-card-demo" : ""}${custom ? " pass-card-custom" : ""}`} onClick={() => onStart(t)}>
-                    <div className="pass-card-name">
-                      {t.name}
-                      {t.demo && <span className="demo-badge">DEMO</span>}
-                      {isUserCreated(t) && <span className="custom-badge">Egen</span>}
+                <div key={t.id}>
+                  <div className="pass-card-wrapper">
+                    <button className={`pass-card${t.demo ? " pass-card-demo" : ""}${custom ? " pass-card-custom" : ""}`} onClick={() => onStart(t)}>
+                      <div className="pass-card-name">
+                        {t.name}
+                        {t.demo && <span className="demo-badge">DEMO</span>}
+                        {isUserCreated(t) && <span className="custom-badge">Egen</span>}
+                      </div>
+                      <div className="pass-card-meta">
+                        {exerciseCount(t)} övningar
+                        {t.demo ? <span> · Sparas inte</span> : last && <span> · Senast: {last}</span>}
+                      </div>
+                      <div className="pass-card-arrow">→</div>
+                    </button>
+                    <div className="pass-card-side-btns">
+                      {!t.demo && (
+                        <button className="pass-edit-btn" onClick={() => onEdit(t)} title="Redigera pass">✎</button>
+                      )}
+                      <button className="pass-dup-btn" onClick={() => onDuplicateTemplate(t)} title="Duplicera pass">⧉</button>
+                      {custom && (
+                        confirmingDeleteId === t.id ? (
+                          <div className="delete-confirm">
+                            <span>Ta bort?</span>
+                            <button className="delete-confirm-yes" onClick={() => { onDeleteTemplate(t.id); setConfirmingDeleteId(null); }}>Ja</button>
+                            <button className="delete-confirm-no" onClick={() => setConfirmingDeleteId(null)}>Nej</button>
+                          </div>
+                        ) : (
+                          <button className="pass-delete-btn" onClick={() => setConfirmingDeleteId(t.id)} title="Ta bort pass">✕</button>
+                        )
+                      )}
                     </div>
-                    <div className="pass-card-meta">
-                      {exerciseCount(t)} övningar
-                      {t.demo ? <span> · Sparas inte</span> : last && <span> · Senast: {last}</span>}
-                    </div>
-                    <div className="pass-card-arrow">→</div>
-                  </button>
-                  <div className="pass-card-side-btns">
-                    {!t.demo && (
-                      <button className="pass-edit-btn" onClick={() => onEdit(t)} title="Redigera pass">✎</button>
-                    )}
-                    <button className="pass-dup-btn" onClick={() => onDuplicateTemplate(t)} title="Duplicera pass">⧉</button>
-                    {custom && (
-                      confirmingDeleteId === t.id ? (
-                        <div className="delete-confirm">
-                          <span>Ta bort?</span>
-                          <button className="delete-confirm-yes" onClick={() => { onDeleteTemplate(t.id); setConfirmingDeleteId(null); }}>Ja</button>
-                          <button className="delete-confirm-no" onClick={() => setConfirmingDeleteId(null)}>Nej</button>
-                        </div>
-                      ) : (
-                        <button className="pass-delete-btn" onClick={() => setConfirmingDeleteId(t.id)} title="Ta bort pass">✕</button>
-                      )
-                    )}
                   </div>
+                  {t.id === "pass2" && (
+                    <div className="pass-card-hint">💡 Välj 2B om du spelat golf nyligen</div>
+                  )}
                 </div>
               );
             })}
