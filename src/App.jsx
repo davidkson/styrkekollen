@@ -76,18 +76,23 @@ export default function App() {
         db.getCustomTemplates(),
       ]);
 
-      // Seed built-in templates to DB on first run
+      // Seed/sync built-in templates to DB
       const builtins = workoutTemplates.filter((t) => !t.demo);
+      const BUILTIN_VERSION = 2;
+      const storedVersion = parseInt(localStorage.getItem("builtin-tpl-version") ?? "0", 10);
+      const needsSync = storedVersion < BUILTIN_VERSION;
       const seedOps = builtins.flatMap((t) => {
         const ops = [];
-        if (!customTpls.find((c) => c.id === t.id)) ops.push(db.upsertCustomTemplate({ id: t.id, name: t.name }));
-        if (!customEx[t.id]) ops.push(db.upsertCustomExercises(t.id, t.exercises));
+        const existing = customTpls.find((c) => c.id === t.id);
+        if (!existing) ops.push(db.upsertCustomTemplate({ id: t.id, name: t.name }));
+        if (!customEx[t.id] || needsSync) ops.push(db.upsertCustomExercises(t.id, t.exercises));
         return ops;
       });
       if (seedOps.length) {
         await Promise.all(seedOps);
         [customTpls, customEx] = await Promise.all([db.getCustomTemplates(), db.getCustomExercises()]);
       }
+      if (needsSync) localStorage.setItem("builtin-tpl-version", String(BUILTIN_VERSION));
 
       setLogs(logsData);
       setCustomExercises(customEx);
