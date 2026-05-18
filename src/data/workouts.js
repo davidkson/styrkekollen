@@ -12,6 +12,16 @@ export const workoutTemplates = [
     ],
   },
   {
+    id: "pass1b",
+    name: "Pass 1B — Bröst / Axlar Express",
+    exercises: [
+      { id: "e1b1", name: "Bänkpress (skivstång)", sets: 3, repsRange: "5–8", rest: "2 min" },
+      { id: "e1b2", name: "Militärpress (stående)", sets: 2, repsRange: "5–8", rest: "2 min" },
+      { id: "e1b3", name: "Sidolyft (hantlar)", sets: 3, repsRange: "12–15", rest: "0 sek (superset)" },
+      { id: "e1b4", name: "Mage: Hanging leg raises", sets: 3, repsRange: "8–15", rest: "60 sek" },
+    ],
+  },
+  {
     id: "pass2b",
     name: "Pass 2B — Rygg / Biceps (utan marklyft)",
     exercises: [
