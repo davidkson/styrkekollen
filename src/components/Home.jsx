@@ -33,7 +33,7 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
     ...demoTemplates,
   ];
 
-  const builtinIds = new Set(["pass1", "pass1b", "pass2", "pass2b", "pass3"]);
+  const builtinIds = new Set(["pass1", "pass1b", "pass2", "pass2b", "upperfull"]);
   const isCustom = (t) => !t.demo && (customTemplates ?? []).some((c) => c.id === t.id);
   const isUserCreated = (t) => isCustom(t) && !builtinIds.has(t.id);
 

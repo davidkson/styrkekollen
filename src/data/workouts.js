@@ -47,6 +47,20 @@ export const workoutTemplates = [
     ],
   },
   {
+    id: "upperfull",
+    name: "Överkropp Full",
+    exercises: [
+      { id: "uf1", name: "Bänkpress (skivstång)", sets: 3, repsRange: "5–8", rest: "2–3 min" },
+      { id: "uf2", name: "Skivstångsrodd", sets: 3, repsRange: "6–10", rest: "90–120 sek" },
+      { id: "uf3", name: "Militärpress (stående)", sets: 3, repsRange: "5–8", rest: "2 min" },
+      { id: "uf4", name: "Pull-ups / Chin-ups", sets: 3, repsRange: "6–10", rest: "90 sek" },
+      { id: "uf5", name: "Sidolyft (hantlar)", sets: 2, repsRange: "12–15", rest: "45–60 sek" },
+      { id: "uf6", name: "Bicepscurl (skivstång eller hantlar)", sets: 2, repsRange: "8–12", rest: "45–60 sek" },
+      { id: "uf7", name: "Smal bänkpress (tricepsfokus)", sets: 2, repsRange: "6–10", rest: "60 sek" },
+      { id: "uf8", name: "Mage: Hanging leg raises", sets: 2, repsRange: "8–15", rest: "30–45 sek" },
+    ],
+  },
+  {
     id: "demo",
     name: "Demo",
     demo: true,
