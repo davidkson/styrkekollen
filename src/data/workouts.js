@@ -61,6 +61,20 @@ export const workoutTemplates = [
     ],
   },
   {
+    id: "upperfullb",
+    name: "Överkropp Full B",
+    exercises: [
+      { id: "ufb1", name: "Marklyft (skivstång)", sets: 3, repsRange: "5–8", rest: "2–3 min" },
+      { id: "ufb2", name: "Bänkpress (skivstång)", sets: 3, repsRange: "5–8", rest: "2–3 min" },
+      { id: "ufb3", name: "Pull-ups / Chin-ups", sets: 3, repsRange: "6–10", rest: "90 sek" },
+      { id: "ufb4", name: "Lutande bänkpress (skivstång)", sets: 3, repsRange: "6–10", rest: "90–120 sek" },
+      { id: "ufb5", name: "Skivstångsrodd", sets: 3, repsRange: "8–12", rest: "90–120 sek" },
+      { id: "ufb6", name: "Armhävningar", sets: 2, repsRange: "max", rest: "60 sek" },
+      { id: "ufb7", name: "Sidolyft (hantlar)", sets: 2, repsRange: "12–15", rest: "45–60 sek" },
+      { id: "ufb8", name: "Mage: Pallof press", sets: 2, repsRange: "10–12 per sida", rest: "30–45 sek" },
+    ],
+  },
+  {
     id: "demo",
     name: "Demo",
     demo: true,
