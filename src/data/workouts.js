@@ -25,10 +25,10 @@ export const workoutTemplates = [
     id: "pass2b",
     name: "Pass 2B — Rygg / Biceps (utan marklyft)",
     exercises: [
-      { id: "e2b1", name: "Hantelrodd (enarms)", sets: 3, repsRange: "8–12", rest: "60–90 sek" },
-      { id: "e2b2", name: "Pull-ups / Chin-ups", sets: 3, repsRange: "max", rest: "90 sek" },
       { id: "e2b3", name: "Skivstångsrodd", sets: 3, repsRange: "6–10", rest: "90–120 sek" },
-      { id: "e2b4", name: "Omvänd rodd (rear delt row, hantlar)", sets: 2, repsRange: "10–15", rest: "45–60 sek" },
+      { id: "e2b2", name: "Pull-ups / Chin-ups", sets: 3, repsRange: "max", rest: "90 sek" },
+      { id: "e2b7", name: "Bröststödd rodd (lutande bänk, skivstång)", sets: 3, repsRange: "8–12", rest: "90 sek" },
+      { id: "e2b9", name: "Hängande rodd (stång i rack)", sets: 2, repsRange: "12–15", rest: "60 sek" },
       { id: "e2b5", name: "Reverse flyes (hantlar)", sets: 3, repsRange: "15–20", rest: "45 sek" },
       { id: "e2b6", name: "Bicepscurl (skivstång eller hantlar)", sets: 2, repsRange: "8–12", rest: "45–60 sek" },
       { id: "e2b8", name: "Mage: Pallof press", sets: 2, repsRange: "10–12 per sida", rest: "30–45 sek" },
