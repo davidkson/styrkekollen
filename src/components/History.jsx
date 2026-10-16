@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IconPencil } from "./icons";
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
@@ -95,7 +96,7 @@ export default function History({ logs, customNames, customExercises, onDelete, 
 
       {logs.length > 0 && (
         <button className="progress-nav-btn" onClick={onProgress}>
-          📈 Övningsutveckling
+          Övningsutveckling
         </button>
       )}
 
@@ -118,7 +119,7 @@ export default function History({ logs, customNames, customExercises, onDelete, 
               <div className="history-entry-meta">
                 <div className="history-entry-top">
                   <span className="history-entry-name">{log.templateName}</span>
-                  {hasPR && <span className="pr-flag">🏆 PR</span>}
+                  {hasPR && <span className="pr-flag">PR</span>}
                 </div>
                 <div className="history-entry-date">
                   {new Date(log.date).toLocaleDateString("sv-SE", {
@@ -180,7 +181,7 @@ export default function History({ logs, customNames, customExercises, onDelete, 
                     {formatDuration(log.startedAt, log.finishedAt) && (
                       <span className="duration-badge">{formatDuration(log.startedAt, log.finishedAt)}</span>
                     )}
-                    <button className="timestamp-edit-btn" onClick={() => startEditing(log)} title="Ändra tider">✎</button>
+                    <button className="timestamp-edit-btn" onClick={() => startEditing(log)} title="Ändra tider"><IconPencil /></button>
                   </div>
                 ) : null}
 

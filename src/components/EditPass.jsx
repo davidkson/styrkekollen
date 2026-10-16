@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IconLock, IconPencil } from "./icons";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek", bodyweight: false };
 
@@ -124,14 +125,14 @@ export default function EditPass({ template, customExercises, onAdd, onRemove, o
                 <div className="edit-exercise-meta">{ex.sets} set · {ex.repsRange} · Vila: {ex.rest}</div>
               </div>
               {ex.isDefault ? (
-                <span className="edit-lock" title="Grundövning">🔒</span>
+                <span className="edit-lock" title="Grundövning" aria-label="Grundövning"><IconLock /></span>
               ) : (
                 <div className="edit-exercise-actions">
                   <div className="exercise-move-btns">
                     <button className="move-btn" disabled={customIdx === 0} onClick={() => moveCustom(customIdx, -1)} title="Flytta upp">▲</button>
                     <button className="move-btn" disabled={customIdx === customList.length - 1} onClick={() => moveCustom(customIdx, 1)} title="Flytta ned">▼</button>
                   </div>
-                  <button className="rename-btn" onClick={() => startEdit(ex)} title="Redigera">✎</button>
+                  <button className="rename-btn" onClick={() => startEdit(ex)} title="Redigera"><IconPencil /></button>
                   <button className="delete-btn" onClick={() => onRemove(ex.id)}>✕</button>
                 </div>
               )}

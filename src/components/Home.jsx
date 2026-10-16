@@ -152,7 +152,7 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
                     </div>
                   </div>
                   {t.id === "pass2" && (
-                    <div className="pass-card-hint">💡 Välj 2B om du spelat golf nyligen</div>
+                    <div className="pass-card-hint">Välj 2B om du spelat golf nyligen</div>
                   )}
                 </div>
               );

@@ -256,8 +256,8 @@ button {
 }
 
 .tab-icon {
-  font-size: 1.1rem;
-  line-height: 1;
+  display: flex;
+  line-height: 0;
 }
 
 .tab-label {
@@ -285,7 +285,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
   background: var(--accent);
   color: var(--accent-ink);
   border: 3px solid var(--bg);
@@ -655,13 +654,10 @@ button {
 }
 
 .home-title {
-  font-family: "Bebas Neue", sans-serif;
   font-size: 2.6rem;
-  font-weight: 400;
-  /* Bebas Neue är en kondenserad versalfont och behöver positiv spärr
-     trots displaystorleken — --track-display gäller normalbreda fonter */
-  letter-spacing: 0.04em;
-  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: var(--track-display);
+  color: var(--text);
   line-height: 1;
 }
 
@@ -744,7 +740,7 @@ button {
 
 .active-session-banner {
   background: var(--surface);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--hair);
   border-radius: var(--radius);
   padding: 16px;
   display: flex;
@@ -786,9 +782,9 @@ button {
 }
 
 .resume-btn {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 999px;
   padding: 8px 16px;
   font-size: 0.85rem;
@@ -998,13 +994,14 @@ button {
 }
 
 .rename-btn {
+  display: flex;
+  align-items: center;
   background: none;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.85rem;
   padding: 10px 8px;
-  line-height: 1;
+  line-height: 0;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
 }
@@ -1216,7 +1213,7 @@ button {
 .copy-prev-btn {
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--fg-3);
   font-size: 0.7rem;
   cursor: pointer;
   padding: 8px 6px;
@@ -1289,7 +1286,7 @@ button {
 
 .prev-comment-label {
   font-weight: 600;
-  color: var(--accent-dim);
+  color: var(--fg-2);
 }
 
 .exercise-comment {
@@ -1430,14 +1427,15 @@ button {
   margin-top: 3px;
 }
 
+/* Passlängden är information, inte status — PR-märket ska synas bland dem */
 .duration-badge {
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: var(--surface2);
+  border: 1px solid var(--hair);
   border-radius: 999px;
   padding: 1px 8px;
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--fg-2);
 }
 
 .delete-btn {
@@ -1454,11 +1452,12 @@ button {
 .delete-btn:hover { color: var(--danger); }
 
 .timestamp-edit-btn {
+  display: flex;
+  align-items: center;
   background: none;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.75rem;
   padding: 10px 8px;
   min-height: 44px;
   opacity: 0.6;
@@ -1754,7 +1753,7 @@ button {
 
 .plate-per-side {
   font-size: 0.8rem;
-  color: var(--accent-dim);
+  color: var(--fg-2);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -1806,10 +1805,10 @@ button {
   width: 28px;
   height: var(--h);
   background: var(--surface2);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--hair);
   border-radius: 4px;
   font-size: 0.6rem;
-  color: var(--accent);
+  color: var(--text);
   font-weight: 700;
   writing-mode: vertical-lr;
   flex-shrink: 0;
@@ -1868,7 +1867,7 @@ button {
 .build-total-value {
   font-size: 1.4rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--text);
   flex: 1;
 }
 
@@ -2175,8 +2174,9 @@ button {
 }
 
 .edit-lock {
-  font-size: 0.75rem;
-  opacity: 0.4;
+  display: flex;
+  color: var(--fg-3);
+  opacity: 0.7;
 }
 
 .edit-form {
@@ -2243,19 +2243,19 @@ button {
 }
 
 .edit-add-btn {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 999px;
   padding: 10px;
   font-size: 0.9rem;
   font-weight: 800;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: border-color 0.15s;
 }
 
 .edit-add-btn:hover {
-  background: var(--accent-dim);
+  border-color: var(--accent);
 }
 
 .add-exercise-btn {
@@ -2378,7 +2378,7 @@ button {
 .login-title {
   font-size: 2.2rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--text);
   letter-spacing: var(--track-display);
   margin-bottom: 32px;
 }
@@ -2558,10 +2558,8 @@ button {
 }
 
 [data-theme="ember"] .finish-panel-save,
-[data-theme="ember"] .resume-btn,
 [data-theme="ember"] .migrate-btn,
-[data-theme="ember"] .login-btn,
-[data-theme="ember"] .edit-add-btn {
+[data-theme="ember"] .login-btn {
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
@@ -2569,14 +2567,6 @@ button {
 [data-theme="fresh"] body,
 [data-theme="fresh"] .app {
   font-family: var(--font);
-}
-
-/* Title: multi-stop gradient */
-[data-theme="fresh"] .home-title {
-  background: linear-gradient(120deg, #4f46e5 0%, #ec4899 55%, #f59e0b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* Cards: clean white, indigo hairline instead of a drop shadow */
@@ -2622,10 +2612,8 @@ button {
 
 /* Buttons: indigo→violet gradient */
 [data-theme="fresh"] .finish-panel-save,
-[data-theme="fresh"] .resume-btn,
 [data-theme="fresh"] .migrate-btn,
-[data-theme="fresh"] .login-btn,
-[data-theme="fresh"] .edit-add-btn {
+[data-theme="fresh"] .login-btn {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: var(--accent-ink);
   border: none;
@@ -2701,13 +2689,6 @@ button {
 
 /* ── Invit tema ─────────────────────────────────────── */
 
-[data-theme="invit"] .home-title {
-  background: linear-gradient(120deg, #ad3768, #3562d7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* Static cards lean on the hairline; only the floating panels keep a shadow. */
 [data-theme="invit"] .session-sheet {
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
@@ -2727,10 +2708,8 @@ button {
 }
 
 [data-theme="invit"] .finish-panel-save,
-[data-theme="invit"] .resume-btn,
 [data-theme="invit"] .migrate-btn,
-[data-theme="invit"] .login-btn,
-[data-theme="invit"] .edit-add-btn {
+[data-theme="invit"] .login-btn {
   background: linear-gradient(135deg, #ad3768, #7e2b50);
   color: var(--accent-ink);
   border: none;
@@ -2754,12 +2733,6 @@ button {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-[data-theme="invit"] .duration-badge {
-  background: rgba(173,55,104,0.2);
-  border-color: rgba(173,55,104,0.3);
-  color: #da7b98;
 }
 
 [data-theme="invit"] .subtitle {
@@ -2830,7 +2803,7 @@ button {
 }
 
 .progress-exercise-item-meta .max-weight {
-  color: var(--accent);
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -2851,7 +2824,7 @@ button {
 .progress-summary-value {
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--text);
 }
 
 .progress-summary-label {
@@ -2990,7 +2963,7 @@ button {
 }
 
 .suggest-action--increase { color: var(--green); }
-.suggest-action--maintain { color: var(--accent); }
+.suggest-action--maintain { color: var(--text); }
 .suggest-action--decrease { color: var(--danger); }
 
 .suggest-reason {
@@ -3006,7 +2979,7 @@ button {
 }
 
 .suggest-weight strong {
-  color: var(--accent);
+  color: var(--text);
 }
 
 .suggest-plates {
@@ -3043,9 +3016,9 @@ button {
 .suggest-apply-btn {
   width: 100%;
   padding: 0.65rem;
-  background: var(--accent);
-  color: var(--accent-ink);
-  border: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.9rem;
@@ -3157,8 +3130,7 @@ button {
   border-color: rgba(96, 165, 250, 0.4);
 }
 
-[data-theme="glass"] .finish-panel-save,
-[data-theme="glass"] .suggest-apply-btn {
+[data-theme="glass"] .finish-panel-save {
   background: rgba(96, 165, 250, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -3253,14 +3225,6 @@ button {
 [data-theme="glass"] .history-set-chip {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Home title */
-[data-theme="glass"] .home-title {
-  background: linear-gradient(135deg, #60a5fa, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* Template cards hover glow */
