@@ -78,7 +78,7 @@ export default function App() {
 
       // Seed/sync built-in templates to DB
       const builtins = workoutTemplates.filter((t) => !t.demo);
-      const BUILTIN_VERSION = 6;
+      const BUILTIN_VERSION = 7;
       const storedVersion = parseInt(localStorage.getItem("builtin-tpl-version") ?? "0", 10);
       const needsSync = storedVersion < BUILTIN_VERSION;
       const seedOps = builtins.flatMap((t) => {
