@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npx vite:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebFetch(domain:www.invit.se)",
+      "Bash(^d \")",
+      "Bash(gh pr merge:*)"
     ]
   }
 }
