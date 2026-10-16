@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { workoutTemplates } from "../data/workouts";
 
 const demoTemplates = workoutTemplates.filter((t) => t.demo);
@@ -7,6 +7,36 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const openMenuRef = useRef(null);
+
+  // Close the open card menu on outside click or Escape
+  useEffect(() => {
+    if (openMenuId === null) return;
+    function handleClick(e) {
+      if (openMenuRef.current?.contains(e.target)) return;
+      setOpenMenuId(null);
+      // The click that dismisses the menu must not also start a workout
+      if (e.target.closest?.(".pass-card")) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+    function handleKeyDown(e) {
+      if (e.key === "Escape") setOpenMenuId(null);
+    }
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openMenuId]);
+
+  function toggleMenu(templateId) {
+    setConfirmingDeleteId(null);
+    setOpenMenuId((current) => (current === templateId ? null : templateId));
+  }
 
   function lastDate(templateId) {
     const entries = logs.filter((l) => l.templateId === templateId);
@@ -86,23 +116,38 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
                         {exerciseCount(t)} övningar
                         {t.demo ? <span> · Sparas inte</span> : last && <span> · Senast: {last}</span>}
                       </div>
-                      <div className="pass-card-arrow">→</div>
                     </button>
-                    <div className="pass-card-side-btns">
-                      {!t.demo && (
-                        <button className="pass-edit-btn" onClick={() => onEdit(t)} title="Redigera pass">✎</button>
+                    <div className="card-menu" ref={openMenuId === t.id ? openMenuRef : null}>
+                      <button
+                        type="button"
+                        className="card-menu-btn"
+                        aria-haspopup="menu"
+                        aria-expanded={openMenuId === t.id}
+                        aria-label={`Alternativ för ${t.name}`}
+                        title="Alternativ"
+                        onClick={() => toggleMenu(t.id)}
+                      >
+                        <span aria-hidden="true">···</span>
+                      </button>
+                      {openMenuId === t.id && (
+                        <div className="card-menu-pop" role="menu">
+                          {!t.demo && (
+                            <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setOpenMenuId(null); onEdit(t); }}>Redigera</button>
+                          )}
+                          <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setOpenMenuId(null); onDuplicateTemplate(t); }}>Duplicera</button>
+                          {custom && (
+                            <button type="button" role="menuitem" className="card-menu-item card-menu-item--danger" onClick={() => { setOpenMenuId(null); setConfirmingDeleteId(t.id); }}>Ta bort</button>
+                          )}
+                        </div>
                       )}
-                      <button className="pass-dup-btn" onClick={() => onDuplicateTemplate(t)} title="Duplicera pass">⧉</button>
-                      {custom && (
-                        confirmingDeleteId === t.id ? (
+                      {confirmingDeleteId === t.id && (
+                        <div className="card-menu-pop card-menu-pop--confirm">
                           <div className="delete-confirm">
                             <span>Ta bort?</span>
                             <button className="delete-confirm-yes" onClick={() => { onDeleteTemplate(t.id); setConfirmingDeleteId(null); }}>Ja</button>
                             <button className="delete-confirm-no" onClick={() => setConfirmingDeleteId(null)}>Nej</button>
                           </div>
-                        ) : (
-                          <button className="pass-delete-btn" onClick={() => setConfirmingDeleteId(t.id)} title="Ta bort pass">✕</button>
-                        )
+                        </div>
                       )}
                     </div>
                   </div>
