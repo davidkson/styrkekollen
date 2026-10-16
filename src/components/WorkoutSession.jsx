@@ -1,8 +1,33 @@
 import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
+import { THEME_ICONS } from "../hooks/useTheme";
+import { fmt } from "../hooks/useRestTimer";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek", bodyweight: false };
-const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
+const REST_PRESETS = [30, 45, 60, 90, 120, 180];
+
+function fmtElapsed(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(s).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+}
+
+// Own component so the ticking clock re-renders the clock, not the exercise list
+function SessionElapsed({ startedAt }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!startedAt) return null;
+  const seconds = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000));
+  return <span className="topbar-elapsed">{fmtElapsed(seconds)}</span>;
+}
 
 const BAR_WEIGHT = 17;
 const PLATES = [20, 15, 10, 5, 2.5, 1.25, 0.5];
@@ -61,12 +86,14 @@ function parseRestSeconds(restStr) {
   return null;
 }
 
-export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme, theme }) {
+export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme, theme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [sessionNote, setSessionNote] = useState("");
-  const [showFinishPanel, setShowFinishPanel] = useState(false);
-  const [confirmAbandon, setConfirmAbandon] = useState(false);
+  // Vad som fälls ut under toppraden: meny, avbryt-bekräftelse eller spara-bekräftelse
+  const [sheet, setSheet] = useState(null);
+  const [restOpen, setRestOpen] = useState(false);
+  const menuRef = useRef(null);
   const [focusMode, setFocusMode] = useState(false);
   const [focusIdx, setFocusIdx] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -94,6 +121,38 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
   });
 
   useEffect(() => { onSave(sets); }, [sets]);
+
+  // Close the top bar menu on outside click or Escape — same pattern as the card menu
+  useEffect(() => {
+    if (sheet !== "menu") return;
+    function handleClick(e) {
+      if (menuRef.current?.contains(e.target)) return;
+      setSheet(null);
+    }
+    function handleKeyDown(e) {
+      if (e.key === "Escape") setSheet(null);
+    }
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [sheet]);
+
+  function openSheet(next) {
+    setSheet((current) => (current === next ? null : next));
+  }
+
+  function openRest() {
+    setSheet(null);
+    setRestOpen(true);
+  }
+
+  function skipRest() {
+    timer.reset();
+    setRestOpen(false);
+  }
 
   function addExerciseInline(e) {
     e.preventDefault();
@@ -246,24 +305,153 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
     sum + ex.sets.filter((s) => s.done && s.weight && s.reps)
       .reduce((s2, s) => s2 + parseFloat(s.weight) * parseInt(s.reps), 0), 0);
 
+  const restVisible = timer.running || timer.done || restOpen;
+
   return (
     <div className="session">
-      <div className="session-header">
-        <button className="back-btn" onClick={onCancel}>← Pausa</button>
-        <h2>{template.name}</h2>
-        <div className="session-header-right">
-          <span className="progress-badge">{totalDone}/{totalSets} set</span>
-          <button className="focus-mode-btn" onClick={() => setFocusMode((v) => !v)} title={focusMode ? "Listläge" : "Fokusläge"}>
-            {focusMode ? "☰" : "⊡"}
+      <div className="session-chrome">
+        <div className="session-topbar">
+          <button
+            className="topbar-btn topbar-btn--danger"
+            onClick={() => openSheet("abandon")}
+            title="Avbryt pass"
+            aria-label="Avbryt pass"
+          >
+            ✕
           </button>
-          <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
-            {ICONS[theme] ?? "🌙"}
-          </button>
-        </div>
-      </div>
 
-      <div className="session-progress-bar">
-        <div className="session-progress-fill" style={{ width: `${totalSets > 0 ? (totalDone / totalSets) * 100 : 0}%` }} />
+          <div className="topbar-title">
+            <span className="topbar-name">{template.name}</span>
+            <span className="topbar-meta">
+              <SessionElapsed startedAt={startedAt} />
+              {startedAt && " · "}
+              {totalDone}/{totalSets} set
+            </span>
+          </div>
+
+          <div className="topbar-menu" ref={menuRef}>
+            <button
+              className="topbar-btn"
+              aria-haspopup="menu"
+              aria-expanded={sheet === "menu"}
+              onClick={() => openSheet("menu")}
+              title="Alternativ"
+              aria-label="Alternativ"
+            >
+              ···
+            </button>
+            {sheet === "menu" && (
+              <div className="card-menu-pop" role="menu">
+                <button type="button" role="menuitem" className="card-menu-item" onClick={openRest}>
+                  ⏱ Vilotimer
+                </button>
+                <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); setFocusMode((v) => !v); }}>
+                  {focusMode ? "☰ Listläge" : "⊡ Fokusläge"}
+                </button>
+                <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onToggleTheme(); }}>
+                  {THEME_ICONS[theme] ?? "🌙"} Byt tema
+                </button>
+                <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onCancel(); }}>
+                  ⏸ Pausa passet
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            className="topbar-btn topbar-btn--finish"
+            onClick={() => openSheet("finish")}
+            title="Avsluta pass"
+            aria-label="Avsluta pass"
+          >
+            ✓
+          </button>
+
+          <div className="session-progress-bar">
+            <div className="session-progress-fill" style={{ width: `${totalSets > 0 ? (totalDone / totalSets) * 100 : 0}%` }} />
+          </div>
+        </div>
+
+        {restVisible && (
+          <div className={`rest-strip${timer.done ? " rest-strip--done" : ""}`}>
+            <button
+              className="rest-toggle"
+              onClick={timer.toggle}
+              title={timer.running ? "Pausa vilan" : "Starta vilan"}
+              aria-label={timer.running ? "Pausa vilan" : "Starta vilan"}
+            >
+              {timer.done ? "↺" : timer.running ? "⏸" : "▶"}
+            </button>
+            <button
+              className="rest-time"
+              onClick={() => setRestOpen((v) => !v)}
+              aria-expanded={restOpen}
+              title="Visa vilotider"
+            >
+              {timer.done ? "Vila klar" : fmt(timer.remaining)}
+            </button>
+            <div className="rest-track">
+              <div className="rest-fill" style={{ width: `${Math.min(100, Math.max(0, timer.progress * 100))}%` }} />
+            </div>
+            <button className="rest-action" onClick={() => timer.adjust(+15)}>+15s</button>
+            <button className="rest-action" onClick={skipRest}>Hoppa</button>
+          </div>
+        )}
+
+        {restOpen && (
+          <div className="rest-tray">
+            {REST_PRESETS.map((s) => (
+              <button
+                key={s}
+                className={`rest-preset${timer.preset === s ? " rest-preset--active" : ""}`}
+                onClick={() => timer.autoStart(s)}
+              >
+                {s < 60 ? `${s}s` : fmt(s)}
+              </button>
+            ))}
+            <button className="rest-preset" onClick={() => timer.adjust(-15)}>−15s</button>
+            <button className="rest-preset" onClick={timer.reset} title="Återställ">↺</button>
+          </div>
+        )}
+
+        {sheet === "abandon" && (
+          <div className="session-sheet">
+            <div className="abandon-confirm">
+              <span>Avbryta passet? All data går förlorad.</span>
+              <div className="abandon-confirm-btns">
+                <button className="delete-confirm-no" onClick={() => setSheet(null)}>Nej</button>
+                <button className="delete-confirm-yes" onClick={onAbandon}>Ja, avbryt</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {sheet === "finish" && (
+          <div className="session-sheet">
+            <div className="finish-panel">
+              <div className="finish-panel-summary">
+                <div className="finish-panel-stat">
+                  <span className="finish-panel-val">{exDone}</span>
+                  <span className="finish-panel-label">övningar</span>
+                </div>
+                <div className="finish-panel-stat">
+                  <span className="finish-panel-val">{totalDone}</span>
+                  <span className="finish-panel-label">set</span>
+                </div>
+                {totalVolume > 0 && (
+                  <div className="finish-panel-stat">
+                    <span className="finish-panel-val">{Math.round(totalVolume).toLocaleString("sv-SE")}</span>
+                    <span className="finish-panel-label">kg volym</span>
+                  </div>
+                )}
+              </div>
+              <div className="finish-panel-btns">
+                <button className="finish-panel-back" onClick={() => setSheet(null)}>Fortsätt träna</button>
+                <button className="finish-panel-save" onClick={finish}>Spara pass ✓</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {focusMode && (
@@ -523,49 +711,6 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
         />
       </div>
 
-      <div className="session-footer">
-        {confirmAbandon ? (
-          <div className="abandon-confirm">
-            <span>Avbryta passet? All data går förlorad.</span>
-            <div className="abandon-confirm-btns">
-              <button className="delete-confirm-no" onClick={() => setConfirmAbandon(false)}>Tillbaka</button>
-              <button className="delete-confirm-yes" onClick={onAbandon}>Avbryt pass</button>
-            </div>
-          </div>
-        ) : showFinishPanel ? (
-          <div className="finish-panel">
-            <div className="finish-panel-summary">
-              <div className="finish-panel-stat">
-                <span className="finish-panel-val">{exDone}</span>
-                <span className="finish-panel-label">övningar</span>
-              </div>
-              <div className="finish-panel-stat">
-                <span className="finish-panel-val">{totalDone}</span>
-                <span className="finish-panel-label">set</span>
-              </div>
-              {totalVolume > 0 && (
-                <div className="finish-panel-stat">
-                  <span className="finish-panel-val">{Math.round(totalVolume).toLocaleString("sv-SE")}</span>
-                  <span className="finish-panel-label">kg volym</span>
-                </div>
-              )}
-            </div>
-            <div className="finish-panel-btns">
-              <button className="finish-panel-back" onClick={() => setShowFinishPanel(false)}>Fortsätt träna</button>
-              <button className="finish-panel-save" onClick={finish}>Spara pass ✓</button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <button className="finish-btn" onClick={() => setShowFinishPanel(true)}>
-              Avsluta pass
-            </button>
-            <button className="abandon-btn" onClick={() => setConfirmAbandon(true)}>
-              Avbryt pass
-            </button>
-          </>
-        )}
-      </div>
     </div>
   );
 }
