@@ -40,7 +40,7 @@ export const workoutTemplates = [
     exercises: [
       { id: "e8", name: "Marklyft (skivstång)", sets: 3, repsRange: "3–6", rest: "2–3 min" },
       { id: "e9", name: "Pull-ups / Chin-ups", sets: 3, repsRange: "max", rest: "90 sek" },
-      { id: "e10", name: "Skivstångsrodd", sets: 3, repsRange: "6–10", rest: "90–120 sek" },
+      { id: "e10", name: "Bröststödd rodd (lutande bänk, skivstång)", sets: 3, repsRange: "6–10", rest: "90–120 sek" },
       { id: "e11", name: "Omvänd rodd (rear delt row, hantlar)", sets: 2, repsRange: "10–15", rest: "45–60 sek" },
       { id: "e12", name: "Bicepscurl (skivstång eller hantlar)", sets: 2, repsRange: "8–12", rest: "45–60 sek" },
       { id: "e14", name: "Mage: Pallof press", sets: 2, repsRange: "10–12 per sida", rest: "30–45 sek" },
