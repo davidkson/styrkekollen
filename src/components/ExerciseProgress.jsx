@@ -9,7 +9,7 @@ function exerciseName(exerciseId, templateId, customNames, customExercises) {
   return exerciseId;
 }
 
-export default function ExerciseProgress({ logs, customNames, customExercises, onBack }) {
+export default function ExerciseProgress({ logs, customNames, customExercises }) {
   const [selectedExercise, setSelectedExercise] = useState(null);
 
   // Build a map of exerciseId -> { name, sessions, maxWeight, templateId }
@@ -41,7 +41,7 @@ export default function ExerciseProgress({ logs, customNames, customExercises, o
     return (
       <div className="progress-view">
         <div className="session-header">
-          <button className="back-btn" onClick={onBack}>← Tillbaka</button>
+          <span />
           <h2>Övningsutveckling</h2>
           <span />
         </div>

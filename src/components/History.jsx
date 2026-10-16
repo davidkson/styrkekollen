@@ -52,7 +52,7 @@ function getPRs(log, allLogs) {
   return prs;
 }
 
-export default function History({ logs, customNames, customExercises, onBack, onDelete, onUpdateTimestamps, onProgress }) {
+export default function History({ logs, customNames, customExercises, onDelete, onUpdateTimestamps, onProgress }) {
   const [confirmingId, setConfirmingId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editStart, setEditStart] = useState("");
@@ -88,7 +88,7 @@ export default function History({ logs, customNames, customExercises, onBack, on
   return (
     <div className="history">
       <div className="session-header">
-        <button className="back-btn" onClick={onBack}>← Tillbaka</button>
+        <span />
         <h2>Historik</h2>
         <span />
       </div>
