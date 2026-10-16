@@ -49,6 +49,49 @@ function calcPlates(target) {
   return result;
 }
 
+/*
+ * Stepper-steg för vikt.
+ *
+ * Skivstången laddas i par, och den minsta skivan är 1,25 kg — alltså är 2,5 kg
+ * det minsta hopp som faktiskt går att lasta. Lätt hantel- och kabelarbete
+ * (sidolyft, face pulls) lever under det rutnätet och går i 1 kg-kliv, så ett
+ * enda hårdkodat steg skulle bli fel i ena änden oavsett vilket man väljer.
+ * Gränsen går vid 20 kg: under den är man per definition inte på en skivstång.
+ */
+const LIGHT_WEIGHT_LIMIT = 20;
+
+function weightStep(value) {
+  return value < LIGHT_WEIGHT_LIMIT ? 1 : 2.5;
+}
+
+/*
+ * Räknar i hundradels kg som heltal, så att stegen aldrig kan ge flyttalsrester
+ * av typen 97.49999999999999. Ligger värdet mellan två steg snäpps det till
+ * rutnätet i stället för att dra med sig avvikelsen (22 → 22,5 upp, 20 ned).
+ */
+function steppedValue(current, step, dir) {
+  const ticks = Math.round(current * 100);
+  const stepTicks = Math.round(step * 100);
+  const next = dir > 0
+    ? (Math.floor(ticks / stepTicks) + 1) * stepTicks
+    : (Math.ceil(ticks / stepTicks) - 1) * stepTicks;
+  return Math.max(0, next) / 100;
+}
+
+function nextFieldValue(set, field, dir) {
+  const raw = set[field];
+  if (raw === "" || raw == null) {
+    // Tomt fält: första trycket hämtar förra passets värde om det finns,
+    // så man slipper klicka sig upp från noll till arbetsvikten.
+    const prev = parseFloat(field === "weight" ? set.prevWeight : set.prevReps);
+    if (!isNaN(prev) && prev > 0) return String(prev);
+  }
+  const parsed = parseFloat(raw);
+  const base = isNaN(parsed) || parsed < 0 ? 0 : parsed;
+  const step = field === "weight" ? weightStep(base) : 1;
+  return String(steppedValue(base, step, dir));
+}
+
 function analyzeSuggestion(exSets, repsRange) {
   const rangeMatch = repsRange?.match(/(\d+)[–-](\d+)/);
   const minReps = rangeMatch ? parseInt(rangeMatch[1]) : null;
@@ -189,10 +232,20 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
       prev.map((ex, i) =>
         i !== exIdx ? ex : {
           ...ex,
-          sets: ex.sets.map((s, j) => j !== setIdx ? s : { ...s, [field]: value }),
+          sets: ex.sets.map((s, j) => j !== setIdx ? s : {
+            ...s,
+            [field]: typeof value === "function" ? value(s) : value,
+          }),
         }
       )
     );
+  }
+
+  // Steppers går genom update() precis som direktinmatningen, så autosparningens
+  // debounce triggas på samma sätt. Värdet räknas inne i state-uppdateringen så
+  // att snabba tryck i följd inte läser ett inaktuellt värde.
+  function adjust(exIdx, setIdx, field, dir) {
+    update(exIdx, setIdx, field, (s) => nextFieldValue(s, field, dir));
   }
 
   function copyPrev(exIdx, setIdx) {
@@ -586,12 +639,6 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
               )}
 
               <div className={`sets-grid${ex.bodyweight ? " sets-grid--bw" : ""}`}>
-                <div className="sets-header">
-                  <span>Set</span>
-                  {!ex.bodyweight && <span>Vikt (kg)</span>}
-                  <span>Reps</span>
-                  <span>✓</span>
-                </div>
                 {sets[exIdx]?.sets.map((s, setIdx) => {
                   const prev = setIdx > 0 ? sets[exIdx].sets[setIdx - 1] : null;
                   const canCopy = prev && (prev.weight || prev.reps);
@@ -604,13 +651,27 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                         )}
                       </span>
                       {!ex.bodyweight && (
-                        <input type="number" min="0" step="0.5"
-                          placeholder={s.prevWeight || "—"} value={s.weight}
-                          onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
+                        <div className="set-stepper set-stepper--weight">
+                          <button type="button" className="step-btn" aria-label={`Minska vikt, set ${setIdx + 1}`}
+                            onClick={() => adjust(exIdx, setIdx, "weight", -1)}>−</button>
+                          <input type="number" min="0" step="0.5" aria-label={`Vikt i kg, set ${setIdx + 1}`}
+                            placeholder={s.prevWeight || "—"} value={s.weight}
+                            onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
+                          <span className="step-unit">kg</span>
+                          <button type="button" className="step-btn" aria-label={`Öka vikt, set ${setIdx + 1}`}
+                            onClick={() => adjust(exIdx, setIdx, "weight", 1)}>+</button>
+                        </div>
                       )}
-                      <input type="number" min="0"
-                        placeholder={s.prevReps || "—"} value={s.reps}
-                        onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
+                      <div className="set-stepper set-stepper--reps">
+                        <button type="button" className="step-btn" aria-label={`Minska reps, set ${setIdx + 1}`}
+                          onClick={() => adjust(exIdx, setIdx, "reps", -1)}>−</button>
+                        <input type="number" min="0" aria-label={`Antal reps, set ${setIdx + 1}`}
+                          placeholder={s.prevReps || "—"} value={s.reps}
+                          onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
+                        <span className="step-unit">reps</span>
+                        <button type="button" className="step-btn" aria-label={`Öka reps, set ${setIdx + 1}`}
+                          onClick={() => adjust(exIdx, setIdx, "reps", 1)}>+</button>
+                      </div>
                       <button className={`done-btn ${s.done ? "done-active" : ""}`}
                         onClick={() => toggleDone(exIdx, setIdx)}>✓</button>
                     </div>

@@ -1099,31 +1099,97 @@ button {
 .sets-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  /* Större lucka mellan set än inuti ett set, så varje set läses som ett block */
+  gap: 10px;
 }
 
-.sets-header {
-  display: grid;
-  grid-template-columns: 32px 1fr 1fr 40px;
-  gap: 6px;
-  font-size: 0.72rem;
-  color: var(--fg-3);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0 2px;
-}
-
+/*
+ * Setraden: setnummer | stepper-stack | ✓
+ *
+ * Vikt och reps ligger på var sin rad i mittkolumnen. Vid 360 px är raden bara
+ * 287 px bred — två steppers bredvid varandra ger 99 px vardera, och där ryms
+ * inte 2 × 40 px träffyta plus ett läsbart värde. Stacken är det enda som både
+ * håller träffytorna och visar "102,5" utan att spilla över.
+ */
 .set-row {
   display: grid;
-  grid-template-columns: 32px 1fr 1fr 40px;
-  gap: 6px;
+  grid-template-columns: 26px minmax(0, 1fr) 44px;
+  grid-template-areas:
+    "num weight done"
+    "num reps   done";
+  column-gap: 6px;
+  row-gap: 2px;
   align-items: center;
 }
 
-.sets-grid--bw .sets-header,
+/* Kroppsviktsövningar loggar bara reps — då räcker en rad. */
 .sets-grid--bw .set-row,
 .set-row--bw {
-  grid-template-columns: 32px 1fr 40px;
+  grid-template-areas: "num reps done";
+}
+
+.set-number { grid-area: num; }
+.set-stepper--weight { grid-area: weight; }
+.set-stepper--reps { grid-area: reps; }
+
+.set-row .done-btn {
+  grid-area: done;
+  align-self: stretch;
+  height: auto;
+  min-height: 44px;
+}
+
+.set-stepper {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-s);
+  transition: border-color 0.15s;
+}
+
+.set-stepper:focus-within {
+  border-color: var(--accent);
+}
+
+.step-btn {
+  flex: 0 0 auto;
+  width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--fg-2);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.step-btn:hover {
+  background: var(--hair-soft);
+  color: var(--text);
+}
+
+.step-btn:active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.step-unit {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding-right: 2px;
+  font-size: 0.7rem;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
 }
 
 .set-adjust-row {
@@ -1147,7 +1213,7 @@ button {
 .set-adjust-btn:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
 .set-adjust-btn:disabled { opacity: 0.25; cursor: default; }
 
-.set-row.set-done input {
+.set-row.set-done .set-stepper {
   opacity: 0.45;
 }
 
@@ -1178,21 +1244,29 @@ button {
   transform: scale(1.2);
 }
 
-.set-row input {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-s);
-  padding: 7px 8px;
+/* Själva värdet är fortfarande ett vanligt fält — tryck och skriv som förut.
+   Ramen bärs av .set-stepper, så fältet självt är genomskinligt. */
+.set-stepper input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 2px;
+  background: none;
+  border: none;
   color: var(--text);
-  font-size: 0.95rem;
   text-align: center;
-  width: 100%;
-  transition: border-color 0.15s;
+  /* Webbläsarens egna spinnpilar blir dubbletter av − och + */
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
-.set-row input:focus {
+.set-stepper input:focus {
   outline: none;
-  border-color: var(--accent);
+}
+
+.set-stepper input::-webkit-outer-spin-button,
+.set-stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .done-btn {
@@ -3057,7 +3131,7 @@ button {
 }
 
 /* Input fields glass */
-[data-theme="glass"] .set-row input,
+[data-theme="glass"] .set-stepper,
 [data-theme="glass"] .plate-input,
 [data-theme="glass"] .edit-input,
 [data-theme="glass"] .name-edit-input,
@@ -3069,7 +3143,12 @@ button {
   color: var(--text);
 }
 
-[data-theme="glass"] .set-row input:focus,
+/* Pillret bär ramen, så glasets fokusglöd flyttar från fältet till pillret. */
+[data-theme="glass"] .set-stepper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-soft);
+}
+
 [data-theme="glass"] .plate-input:focus,
 [data-theme="glass"] .edit-input:focus,
 [data-theme="glass"] .name-edit-input:focus,
