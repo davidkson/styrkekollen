@@ -1,9 +1,17 @@
+import { IconHome, IconHistory, IconProgress, IconTools, IconStart } from "./icons";
+
+/*
+ * Flikikonerna är inline-SVG, inte emoji. Emoji renderas i fullfärg av
+ * operativsystemet och går inte att färgsätta via tokens — SVG med
+ * currentColor ärver --fg-3 / --text / --accent-ink, så färgen får markera
+ * aktiv flik tillsammans med accentpricken.
+ */
 const TABS = [
-  { id: "home", label: "Hem", icon: "🏠" },
-  { id: "history", label: "Historik", icon: "📋" },
+  { id: "home", label: "Hem", Icon: IconHome },
+  { id: "history", label: "Historik", Icon: IconHistory },
   null, // raised center slot
-  { id: "progress", label: "Utveckling", icon: "📈" },
-  { id: "tools", label: "Verktyg", icon: "🧰" },
+  { id: "progress", label: "Utveckling", Icon: IconProgress },
+  { id: "tools", label: "Verktyg", Icon: IconTools },
 ];
 
 function isActive(tabId, view) {
@@ -27,7 +35,7 @@ export default function TabBar({ view, hasActiveSession, onNavigate, onStart }) 
             aria-current={centerActive ? "page" : undefined}
             title={hasActiveSession ? "Till pågående pass" : "Starta ett pass"}
           >
-            <span className="tab-fab" aria-hidden="true">▶</span>
+            <span className="tab-fab"><IconStart /></span>
             <span className="tab-label">{hasActiveSession ? "Pass" : "Starta"}</span>
           </button>
         ) : (
@@ -38,7 +46,7 @@ export default function TabBar({ view, hasActiveSession, onNavigate, onStart }) 
             onClick={() => onNavigate(tab.id)}
             aria-current={isActive(tab.id, view) ? "page" : undefined}
           >
-            <span className="tab-icon" aria-hidden="true">{tab.icon}</span>
+            <span className="tab-icon"><tab.Icon /></span>
             <span className="tab-label">{tab.label}</span>
           </button>
         )

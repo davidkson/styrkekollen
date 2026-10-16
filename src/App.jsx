@@ -308,7 +308,6 @@ export default function App() {
           onCancel={cancelWorkout}
           onAbandon={abandonWorkout}
           onToggleTheme={toggleTheme}
-          theme={theme}
         />
       )}
       {view === "history" && (

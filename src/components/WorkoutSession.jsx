@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
-import { THEME_ICONS } from "../hooks/useTheme";
 import { fmt } from "../hooks/useRestTimer";
+import { IconPencil } from "./icons";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek", bodyweight: false };
 const REST_PRESETS = [30, 45, 60, 90, 120, 180];
@@ -129,7 +129,7 @@ function parseRestSeconds(restStr) {
   return null;
 }
 
-export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme, theme }) {
+export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [sessionNote, setSessionNote] = useState("");
@@ -396,16 +396,16 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
             {sheet === "menu" && (
               <div className="card-menu-pop" role="menu">
                 <button type="button" role="menuitem" className="card-menu-item" onClick={openRest}>
-                  ⏱ Vilotimer
+                  Vilotimer
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); setFocusMode((v) => !v); }}>
-                  {focusMode ? "☰ Listläge" : "⊡ Fokusläge"}
+                  {focusMode ? "Listläge" : "Fokusläge"}
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onToggleTheme(); }}>
-                  {THEME_ICONS[theme] ?? "🌙"} Byt tema
+                  Byt tema
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onCancel(); }}>
-                  ⏸ Pausa passet
+                  Pausa passet
                 </button>
               </div>
             )}
@@ -433,7 +433,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
               title={timer.running ? "Pausa vilan" : "Starta vilan"}
               aria-label={timer.running ? "Pausa vilan" : "Starta vilan"}
             >
-              {timer.done ? "↺" : timer.running ? "⏸" : "▶"}
+              {timer.done ? "↺" : timer.running ? "▮▮" : "►"}
             </button>
             <button
               className="rest-time"
@@ -550,7 +550,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                   <>
                     {customNames[ex.id] ?? ex.name}
                     {(isSupTop || isSupBottom) && <span className="superset-badge">SS</span>}
-                    <button className="rename-btn" onClick={() => { setNameInput(customNames[ex.id] ?? ex.name); setEditingName(ex.id); }} title="Byt namn">✎</button>
+                    <button className="rename-btn" onClick={() => { setNameInput(customNames[ex.id] ?? ex.name); setEditingName(ex.id); }} title="Byt namn"><IconPencil /></button>
                   </>
                 )}
               </div>
@@ -573,7 +573,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                     className={`suggest-btn${suggestIdx === exIdx ? " suggest-btn--active" : ""}`}
                     onClick={() => setSuggestIdx(suggestIdx === exIdx ? null : exIdx)}
                   >
-                    {suggestIdx === exIdx ? "✕ Stäng" : "💡 Föreslå vikter"}
+                    {suggestIdx === exIdx ? "✕ Stäng" : "Föreslå vikter"}
                   </button>
 
                   {suggestIdx === exIdx && (() => {
@@ -586,9 +586,9 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                     return (
                       <div className="suggest-panel">
                         <div className={`suggest-action suggest-action--${suggestion.action}`}>
-                          {suggestion.action === "increase" && "📈 Öka vikt"}
-                          {suggestion.action === "maintain" && "➡️ Behåll vikt"}
-                          {suggestion.action === "decrease" && "📉 Sänk vikt"}
+                          {suggestion.action === "increase" && "↑ Öka vikt"}
+                          {suggestion.action === "maintain" && "→ Behåll vikt"}
+                          {suggestion.action === "decrease" && "↓ Sänk vikt"}
                         </div>
                         <div className="suggest-reason">{suggestion.reason}</div>
                         <div className="suggest-weight">
