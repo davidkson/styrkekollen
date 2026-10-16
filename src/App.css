@@ -441,7 +441,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 8px 16px;
   font-size: 0.85rem;
   font-weight: 700;
@@ -465,7 +465,7 @@ button {
 .finish-panel {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r-l);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -507,7 +507,7 @@ button {
 .finish-panel-back {
   background: none;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 999px;
   color: var(--muted);
   font-size: 0.9rem;
   padding: 12px;
@@ -520,7 +520,7 @@ button {
 .finish-panel-save {
   background: var(--accent);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   color: var(--accent-ink);
   font-size: 0.95rem;
   font-weight: 700;
@@ -604,7 +604,7 @@ button {
 .focus-mode-btn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   color: var(--muted);
   font-size: 1rem;
   padding: 2px 8px;
@@ -737,7 +737,7 @@ button {
   flex: 1;
   background: var(--surface2);
   border: 1px solid var(--accent);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 3px 8px;
   color: var(--text);
   font-size: 0.95rem;
@@ -851,7 +851,7 @@ button {
   flex: 1;
   background: none;
   border: 1px dashed var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   color: var(--muted);
   font-size: 0.78rem;
   min-height: 44px;
@@ -896,7 +896,7 @@ button {
 .set-row input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   padding: 7px 8px;
   color: var(--text);
   font-size: 0.95rem;
@@ -913,7 +913,7 @@ button {
 .done-btn {
   width: 44px;
   height: 44px;
-  border-radius: 8px;
+  border-radius: var(--r-s);
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--muted);
@@ -936,8 +936,8 @@ button {
   font-size: 0.78rem;
   color: var(--muted);
   background: var(--surface2);
-  border-left: 2px solid var(--border);
-  border-radius: 0 6px 6px 0;
+  border-left: 2px solid var(--hair-soft);
+  border-radius: 0 var(--r-s) var(--r-s) 0;
   padding: 6px 10px;
 }
 
@@ -951,7 +951,7 @@ button {
   width: 100%;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   padding: 8px 10px;
   color: var(--text);
   font-size: 0.85rem;
@@ -975,7 +975,7 @@ button {
   justify-content: center;
   gap: 24px;
   padding: 14px 16px 10px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--hair-soft);
   margin-top: 8px;
 }
 
@@ -1035,7 +1035,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   padding: 16px;
   font-size: 1rem;
   font-weight: 800;
@@ -1050,7 +1050,7 @@ button {
 .abandon-btn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 999px;
   color: var(--muted);
   font-size: 0.85rem;
   padding: 10px;
@@ -1183,7 +1183,7 @@ button {
 .timestamp-edit input[type="datetime-local"] {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 4px 8px;
   color: var(--text);
   font-size: 0.8rem;
@@ -1208,7 +1208,7 @@ button {
   background: var(--danger);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 3px 10px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -1219,7 +1219,7 @@ button {
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 3px 10px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -1252,7 +1252,7 @@ button {
 .history-set-chip {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 2px 8px;
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
@@ -1263,7 +1263,7 @@ button {
   color: var(--muted);
   background: var(--surface2);
   border: 1px dashed var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 2px 8px;
   font-style: italic;
 }
@@ -1364,7 +1364,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--hair-soft);
   padding-top: 12px;
 }
 
@@ -1393,7 +1393,7 @@ button {
   width: 100%;
   background: none;
   border: none;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--hair-soft);
   color: var(--muted);
   font-size: 0.75rem;
   padding: 12px;
@@ -1445,7 +1445,7 @@ button {
 .plate-panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r-l);
   width: 260px;
   height: 560px;
   padding: 14px;
@@ -1490,7 +1490,7 @@ button {
 .plate-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   padding: 8px 10px;
   color: var(--text);
   font-size: 1rem;
@@ -1526,7 +1526,7 @@ button {
 .plate-chip {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   padding: 4px 10px;
   display: flex;
   gap: 5px;
@@ -1585,7 +1585,7 @@ button {
   gap: 4px;
   margin-bottom: 12px;
   background: var(--surface2);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   padding: 3px;
 }
 
@@ -1614,7 +1614,7 @@ button {
   margin-bottom: 12px;
   padding: 10px 12px;
   background: var(--surface2);
-  border-radius: 8px;
+  border-radius: var(--r-s);
 }
 
 .build-total-label {
@@ -1663,7 +1663,7 @@ button {
 .build-btn {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--r-s);
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text);
@@ -1690,7 +1690,7 @@ button {
   margin-top: 4px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   color: var(--muted);
   font-size: 0.8rem;
   padding: 6px;
@@ -1821,7 +1821,7 @@ button {
   gap: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-s);
   padding: 10px 12px;
 }
 
@@ -1924,7 +1924,7 @@ button {
 .edit-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-s);
   padding: 8px 10px;
   color: var(--text);
   font-size: 0.9rem;
@@ -1964,7 +1964,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 10px;
   font-size: 0.9rem;
   font-weight: 800;
@@ -2012,7 +2012,7 @@ button {
   flex: 1;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   color: var(--muted);
   font-size: 0.9rem;
   padding: 10px;
@@ -2130,7 +2130,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   padding: 14px;
   font-size: 1rem;
   font-weight: 800;
@@ -2186,7 +2186,7 @@ button {
 .migrate-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r-l);
   padding: 28px 24px;
   max-width: 320px;
   width: 100%;
@@ -2230,7 +2230,7 @@ button {
   flex: 1;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   color: var(--muted);
   font-size: 0.9rem;
   padding: 10px;
@@ -2244,7 +2244,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 10px;
   font-size: 0.9rem;
   font-weight: 800;
@@ -2321,7 +2321,7 @@ button {
 .timer-panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r-l);
   width: 260px;
   padding: 14px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
@@ -2405,7 +2405,7 @@ button {
 .timer-adj-btn {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   color: var(--text);
   font-size: 0.72rem;
   font-weight: 600;
@@ -2426,7 +2426,7 @@ button {
 .timer-preset {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   color: var(--muted);
   font-size: 0.78rem;
   padding: 4px 8px;
@@ -2451,7 +2451,7 @@ button {
 .timer-reset-btn {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   color: var(--muted);
   font-size: 1.1rem;
   width: 40px;
@@ -2466,7 +2466,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 1.1rem;
   padding: 8px;
   cursor: pointer;
@@ -2527,14 +2527,13 @@ button {
   background-clip: text;
 }
 
-/* Cards: clean white with soft shadow, no visible border */
+/* Cards: clean white, indigo hairline instead of a drop shadow */
 [data-theme="fresh"] .pass-card,
 [data-theme="fresh"] .exercise-card,
 [data-theme="fresh"] .history-entry,
 [data-theme="fresh"] .edit-exercise-row {
-  border: none;
-  box-shadow: 0 1px 4px rgba(79,70,229,0.06), 0 6px 20px rgba(79,70,229,0.08);
-  transition: box-shadow 0.2s, transform 0.2s;
+  border: 1px solid var(--hair);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
 }
 
 /* Pass cards: coloured left accent bar per position */
@@ -2560,7 +2559,7 @@ button {
 }
 
 [data-theme="fresh"] .pass-card:hover {
-  box-shadow: 0 4px 12px rgba(79,70,229,0.12), 0 12px 32px rgba(79,70,229,0.16);
+  background: var(--surface2);
   transform: translateY(-2px);
 }
 
@@ -2578,16 +2577,14 @@ button {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: var(--accent-ink);
   border: none;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(79,70,229,0.4);
+  border-radius: 999px;
 }
 
 [data-theme="fresh"] .timer-start-btn {
   background: linear-gradient(135deg, #0ea5e9, #4f46e5);
   color: var(--accent-ink);
   border: none;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(14,165,233,0.4);
+  border-radius: 999px;
 }
 
 /* Progress badge: teal tint */
@@ -2600,9 +2597,9 @@ button {
 
 /* Active session banner: gradient left border */
 [data-theme="fresh"] .active-session-banner {
-  border: none;
+  border: 1px solid var(--hair);
   border-left: 4px solid #ec4899;
-  box-shadow: 0 4px 20px rgba(236,72,153,0.12);
+  background: var(--surface2);
 }
 
 [data-theme="fresh"] .active-dot {
@@ -2703,13 +2700,10 @@ button {
   background-clip: text;
 }
 
-[data-theme="invit"] .pass-card,
-[data-theme="invit"] .exercise-card,
-[data-theme="invit"] .history-entry,
-[data-theme="invit"] .edit-exercise-row,
+/* Static cards lean on the hairline; only the floating panels keep a shadow. */
 [data-theme="invit"] .plate-panel,
 [data-theme="invit"] .timer-panel {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
 /* Pass cards: rose och blå vänsterkanter */
@@ -2723,7 +2717,6 @@ button {
 [data-theme="invit"] .pass-card:hover {
   background: #2d3a47;
   border-color: #ad3768;
-  box-shadow: 0 4px 16px rgba(173,55,104,0.25);
 }
 
 [data-theme="invit"] .finish-btn,
@@ -2734,14 +2727,12 @@ button {
   background: linear-gradient(135deg, #ad3768, #7e2b50);
   color: var(--accent-ink);
   border: none;
-  box-shadow: 0 4px 14px rgba(173,55,104,0.4);
 }
 
 [data-theme="invit"] .timer-start-btn {
   background: linear-gradient(135deg, #3562d7, #1a369a);
   color: var(--accent-ink);
   border: none;
-  box-shadow: 0 4px 14px rgba(53,98,215,0.4);
 }
 
 [data-theme="invit"] .progress-badge {
@@ -2753,7 +2744,7 @@ button {
 
 [data-theme="invit"] .active-session-banner {
   border-color: #ad3768;
-  box-shadow: 0 4px 20px rgba(173,55,104,0.2);
+  background: var(--surface2);
 }
 
 [data-theme="invit"] .exercise-card {
@@ -3068,7 +3059,7 @@ button {
 
 .suggest-plate-chip {
   background: var(--surface2);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 0.3rem 0.6rem;
   font-size: 0.82rem;
   color: var(--text);
@@ -3086,7 +3077,7 @@ button {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
@@ -3195,7 +3186,7 @@ button {
 [data-theme="glass"] .back-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: var(--r-s);
   padding: 0.4rem 0.75rem;
 }
 
