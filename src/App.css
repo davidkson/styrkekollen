@@ -1096,47 +1096,45 @@ button {
   margin-top: 0 !important;
 }
 
+/*
+ * Setraden: setnummer | vikt | reps | ✓ — en rad, även vid 360 px.
+ *
+ * Budgeten är hård. Vid 360 px är raden 287 px, och fyra stepperknappar ska
+ * samsas med två läsbara värden. Knapparna är därför 34 px, inte 44: vikten
+ * behöver sina ~45 px för att "102,5" inte ska klippas. Repskolumnen är låst
+ * i bredd (reps är två–tre tecken) så att vikten får all elasticitet.
+ */
 .sets-grid {
   display: flex;
   flex-direction: column;
-  /* Större lucka mellan set än inuti ett set, så varje set läses som ett block */
-  gap: 10px;
+  gap: 6px;
+  --step-btn: 34px;
+  --reps-col: calc(var(--step-btn) * 2 + 32px);
+  --set-cols: 20px minmax(0, 1fr) var(--reps-col) 44px;
 }
 
-/*
- * Setraden: setnummer | stepper-stack | ✓
- *
- * Vikt och reps ligger på var sin rad i mittkolumnen. Vid 360 px är raden bara
- * 287 px bred — två steppers bredvid varandra ger 99 px vardera, och där ryms
- * inte 2 × 40 px träffyta plus ett läsbart värde. Stacken är det enda som både
- * håller träffytorna och visar "102,5" utan att spilla över.
- */
+/* Kroppsviktsövningar loggar bara reps — då får reps elasticiteten i stället. */
+.sets-grid--bw {
+  --set-cols: 20px minmax(0, 1fr) 44px;
+}
+
+.sets-header {
+  display: grid;
+  grid-template-columns: var(--set-cols);
+  gap: 3px;
+  font-size: 0.72rem;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 0 2px;
+}
+
 .set-row {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) 44px;
-  grid-template-areas:
-    "num weight done"
-    "num reps   done";
-  column-gap: 6px;
-  row-gap: 2px;
+  grid-template-columns: var(--set-cols);
+  gap: 3px;
   align-items: center;
-}
-
-/* Kroppsviktsövningar loggar bara reps — då räcker en rad. */
-.sets-grid--bw .set-row,
-.set-row--bw {
-  grid-template-areas: "num reps done";
-}
-
-.set-number { grid-area: num; }
-.set-stepper--weight { grid-area: weight; }
-.set-stepper--reps { grid-area: reps; }
-
-.set-row .done-btn {
-  grid-area: done;
-  align-self: stretch;
-  height: auto;
-  min-height: 44px;
 }
 
 .set-stepper {
@@ -1156,8 +1154,8 @@ button {
 
 .step-btn {
   flex: 0 0 auto;
-  width: 40px;
-  min-height: 40px;
+  width: var(--step-btn);
+  min-height: var(--step-btn);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1178,18 +1176,6 @@ button {
 .step-btn:active {
   background: var(--accent-soft);
   color: var(--accent);
-}
-
-.step-unit {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  padding-right: 2px;
-  font-size: 0.7rem;
-  color: var(--fg-3);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  pointer-events: none;
 }
 
 .set-adjust-row {
@@ -1249,7 +1235,8 @@ button {
 .set-stepper input {
   flex: 1 1 auto;
   min-width: 0;
-  padding: 0 2px;
+  /* Varje px i fältet behövs för att "102,5" ska rymmas vid 360 px */
+  padding: 0;
   background: none;
   border: none;
   color: var(--text);

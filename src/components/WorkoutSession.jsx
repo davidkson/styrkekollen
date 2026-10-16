@@ -639,6 +639,12 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
               )}
 
               <div className={`sets-grid${ex.bodyweight ? " sets-grid--bw" : ""}`}>
+                <div className="sets-header">
+                  <span>Set</span>
+                  {!ex.bodyweight && <span>Vikt (kg)</span>}
+                  <span>Reps</span>
+                  <span>✓</span>
+                </div>
                 {sets[exIdx]?.sets.map((s, setIdx) => {
                   const prev = setIdx > 0 ? sets[exIdx].sets[setIdx - 1] : null;
                   const canCopy = prev && (prev.weight || prev.reps);
@@ -657,7 +663,6 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                           <input type="number" min="0" step="0.5" aria-label={`Vikt i kg, set ${setIdx + 1}`}
                             placeholder={s.prevWeight || "—"} value={s.weight}
                             onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
-                          <span className="step-unit">kg</span>
                           <button type="button" className="step-btn" aria-label={`Öka vikt, set ${setIdx + 1}`}
                             onClick={() => adjust(exIdx, setIdx, "weight", 1)}>+</button>
                         </div>
@@ -668,7 +673,6 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
                         <input type="number" min="0" aria-label={`Antal reps, set ${setIdx + 1}`}
                           placeholder={s.prevReps || "—"} value={s.reps}
                           onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
-                        <span className="step-unit">reps</span>
                         <button type="button" className="step-btn" aria-label={`Öka reps, set ${setIdx + 1}`}
                           onClick={() => adjust(exIdx, setIdx, "reps", 1)}>+</button>
                       </div>
