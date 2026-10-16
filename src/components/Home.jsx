@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { workoutTemplates } from "../data/workouts";
 
-const ICONS = { dark: "🌙", light: "☀️", ember: "🔥", fresh: "✨", invit: "🌸" };
 const demoTemplates = workoutTemplates.filter((t) => t.demo);
 
-export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDuplicateTemplate, onDeleteTemplate, onLogout, onToggleTheme, theme, logs, activeSession, customExercises, customTemplates }) {
+export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDuplicateTemplate, onDeleteTemplate, logs, activeSession, customExercises, customTemplates }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
@@ -41,12 +40,6 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
     <div className="home">
       <div className="home-header">
         <h1 className="home-title">Styrkekollen</h1>
-        <div className="home-header-actions">
-          <button className="theme-btn" onClick={onToggleTheme} title="Byt tema">
-            {ICONS[theme] ?? "🌙"}
-          </button>
-          <button className="logout-btn" onClick={onLogout} title="Logga ut">↩</button>
-        </div>
       </div>
 
       {activeSession ? (

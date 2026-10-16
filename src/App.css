@@ -6,6 +6,9 @@
   --r-m: 16px;
   --r-l: 24px;
 
+  /* Flikradens höjd, exklusive safe-area längst ned */
+  --tabbar-h: 62px;
+
   /* Teckenspärr — skalar med storleken, brödtext får 0 */
   --track-display: -0.035em;
   --track-heading: -0.02em;
@@ -194,9 +197,184 @@ button {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
-  padding: 0 0 max(80px, calc(env(safe-area-inset-bottom) + 60px));
+  /* Plats för flikraden så sista elementet aldrig hamnar under den */
+  padding: 0 0 calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 20px);
   padding-top: env(safe-area-inset-top);
 }
+
+/* BOTTOM TAB BAR */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  z-index: 150;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--hair);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 100%;
+  background: none;
+  border: none;
+  color: var(--fg-3);
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.tab:hover { color: var(--fg-2); }
+
+.tab--active { color: var(--text); }
+
+/* Liten accentprick markerar aktiv flik */
+.tab--active::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tab-label {
+  line-height: 1;
+}
+
+/* Upphöjd mittknapp */
+.tab--center {
+  justify-content: flex-end;
+  padding-bottom: 8px;
+  color: var(--fg-2);
+}
+
+.tab--center.tab--active { color: var(--text); }
+.tab--center.tab--active::before { content: none; }
+
+.tab-fab {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 3px solid var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+
+.tab--center:active .tab-fab { transform: translateX(-50%) scale(0.93); }
+
+.tab--center.tab--active .tab-fab {
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* TOOLS */
+.tools {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.tools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tools-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-3);
+}
+
+.tools-card {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-m);
+  padding: 14px;
+}
+
+.tools-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tools-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-s);
+  color: var(--fg-2);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.tools-theme:hover { border-color: var(--hair); color: var(--text); }
+
+.tools-theme--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.tools-theme-icon { font-size: 1.2rem; line-height: 1; }
+
+.tools-logout {
+  padding: 13px;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-m);
+  color: var(--danger);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.tools-logout:hover { border-color: var(--danger); }
 
 /* STICKY TIMER BAR */
 .sticky-timer-bar {
@@ -555,26 +733,6 @@ button {
 }
 
 .finish-panel-save:hover { background: var(--accent-dim); }
-
-.history-btn {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 10px 24px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: border-color 0.15s;
-}
-
-.history-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
 
 /* SESSION */
 .session {
@@ -1438,17 +1596,12 @@ button {
 }
 
 /* PLATE CALCULATOR */
-.plate-calc-wrapper {
-  position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  right: 20px;
-  z-index: 100;
+.plate-calc {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
 }
 
+/* Base FAB shape — used by the rest timer FAB */
 .plate-fab {
   width: 48px;
   height: 48px;
@@ -1466,35 +1619,6 @@ button {
 
 .plate-fab:hover { border-color: var(--accent); }
 .plate-fab-active { border-color: var(--accent); transform: scale(0.92); }
-
-.plate-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-l);
-  width: 260px;
-  height: 560px;
-  padding: 14px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  display: flex;
-  flex-direction: column;
-}
-
-.plate-body {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-
-.plate-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 700;
-  font-size: 0.88rem;
-  margin-bottom: 12px;
-}
 
 .plate-close {
   background: none;
@@ -2291,24 +2415,6 @@ button {
   margin-bottom: 4px;
 }
 
-.logout-btn {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.15s;
-}
-
-.logout-btn:hover { color: var(--text); }
-
-.home-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .theme-btn {
   background: none;
   border: none;
@@ -2321,7 +2427,8 @@ button {
 /* REST TIMER */
 .timer-wrapper {
   position: fixed;
-  bottom: max(80px, calc(env(safe-area-inset-bottom) + 60px));
+  /* Ovanför flikraden */
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);
   right: 20px;
   z-index: 100;
   display: flex;
@@ -2637,7 +2744,6 @@ button {
 }
 
 /* Floating panels */
-[data-theme="fresh"] .plate-panel,
 [data-theme="fresh"] .timer-panel {
   border: none;
   box-shadow: 0 8px 32px rgba(79,70,229,0.15), 0 2px 8px rgba(0,0,0,0.06);
@@ -2682,14 +2788,6 @@ button {
   stroke: #0ea5e9;
 }
 
-/* History btn pill */
-[data-theme="fresh"] .history-btn {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  color: #fff;
-  border: none;
-  box-shadow: 0 4px 14px rgba(79,70,229,0.3);
-}
-
 /* Set row inputs */
 [data-theme="fresh"] .set-input {
   border-color: #ddd6fe;
@@ -2702,13 +2800,6 @@ button {
 }
 
 /* FAB buttons */
-[data-theme="fresh"] .plate-fab {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  color: #fff;
-  border: none;
-  box-shadow: 0 4px 16px rgba(79,70,229,0.35);
-}
-
 [data-theme="fresh"] .timer-fab {
   background: linear-gradient(135deg, #0ea5e9, #4f46e5);
   color: #fff;
@@ -2726,7 +2817,6 @@ button {
 }
 
 /* Static cards lean on the hairline; only the floating panels keep a shadow. */
-[data-theme="invit"] .plate-panel,
 [data-theme="invit"] .timer-panel {
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
@@ -2789,20 +2879,6 @@ button {
 
 [data-theme="invit"] .timer-ring-fill {
   stroke: #ad3768;
-}
-
-[data-theme="invit"] .history-btn {
-  background: linear-gradient(135deg, #ad3768, #3562d7);
-  color: #fff;
-  border: none;
-  box-shadow: 0 4px 14px rgba(173,55,104,0.35);
-}
-
-[data-theme="invit"] .plate-fab {
-  background: linear-gradient(135deg, #ad3768, #7e2b50);
-  color: #fff;
-  border: none;
-  box-shadow: 0 4px 16px rgba(173,55,104,0.4);
 }
 
 [data-theme="invit"] .timer-fab {
@@ -3131,7 +3207,6 @@ button {
 /* Glass surfaces — cards, panels, inputs */
 [data-theme="glass"] .exercise-card,
 [data-theme="glass"] .history-entry,
-[data-theme="glass"] .plate-panel,
 [data-theme="glass"] .suggest-panel,
 [data-theme="glass"] .progress-session,
 [data-theme="glass"] .progress-summary-stat,
@@ -3200,7 +3275,6 @@ button {
   color: #ffffff;
 }
 
-[data-theme="glass"] .history-btn,
 [data-theme="glass"] .progress-nav-btn {
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(var(--glass-blur));
@@ -3223,9 +3297,35 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Tab bar glass — ytan är genomskinlig, så bakgrunden måste bära den */
+[data-theme="glass"] .tabbar {
+  background: rgba(10, 10, 26, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="glass"] .tab-fab {
+  border-color: rgba(10, 10, 26, 0.9);
+}
+
+[data-theme="glass"] .tools-card,
+[data-theme="glass"] .tools-theme,
+[data-theme="glass"] .tools-logout {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+[data-theme="glass"] .tools-theme--active {
+  background: var(--accent-soft);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
 /* Rest timer FAB glass */
-[data-theme="glass"] .timer-fab,
-[data-theme="glass"] .plate-fab {
+[data-theme="glass"] .timer-fab {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -3314,7 +3414,7 @@ button {
   [data-theme="glass"] .exercise-card,
   [data-theme="glass"] .history-entry,
   [data-theme="glass"] .template-card,
-  [data-theme="glass"] .plate-panel,
+  [data-theme="glass"] .tabbar,
   [data-theme="glass"] .suggest-panel,
   [data-theme="glass"] .progress-session,
   [data-theme="glass"] .progress-summary-stat,

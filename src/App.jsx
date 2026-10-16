@@ -6,7 +6,8 @@ import EditPass from "./components/EditPass";
 import ExerciseProgress from "./components/ExerciseProgress";
 import Login from "./components/Login";
 import MigratePrompt from "./components/MigratePrompt";
-import PlateCalculator from "./components/PlateCalculator";
+import Tools from "./components/Tools";
+import TabBar from "./components/TabBar";
 import RestTimer from "./components/RestTimer";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
@@ -16,7 +17,7 @@ import { useSwipeBack } from "./hooks/useSwipeBack";
 import "./App.css";
 
 export default function App() {
-  const { theme, toggle: toggleTheme } = useTheme();
+  const { theme, toggle: toggleTheme, select: selectTheme } = useTheme();
   const timer = useRestTimer();
   const [adjStep, setAdjStep] = useState(15);
   const longPressRef = useRef(null);
@@ -32,11 +33,13 @@ export default function App() {
   const [activeTemplate, setActiveTemplate] = useState(null);
   const debounceRef = useRef(null);
 
+  // Swipe back only inside a tab — never between tabs. "edit" is the only
+  // sub-view of a tab (it hangs off the home tab), so that is the only place
+  // the gesture applies. The tab bar handles everything else.
   useSwipeBack(() => {
-    if (view === "session") cancelWorkout();
-    else if (view === "history") setView("home");
-    else if (view === "edit") { setView("home"); setActiveTemplate(null); }
-  }, view !== "home");
+    setView("home");
+    setActiveTemplate(null);
+  }, view === "edit");
 
   function handleAdjPointerDown() {
     longPressRef.current = setTimeout(() => {
@@ -219,6 +222,28 @@ export default function App() {
     if (!activeSession?.demo) await db.clearActiveSession();
   }
 
+  // Leaving an ongoing session through the tab bar keeps it active, same as "Pausa"
+  function pauseSession() {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!activeSession?.demo) db.saveActiveSession(activeSession);
+  }
+
+  function navigate(next) {
+    if (next === view) return;
+    if (view === "session") pauseSession();
+    setActiveTemplate(null);
+    setView(next);
+  }
+
+  function handleStartTab() {
+    if (activeSession) {
+      if (view !== "session") resumeWorkout();
+      return;
+    }
+    // No session to resume — the home view is where a pass is picked
+    navigate("home");
+  }
+
   async function deleteLog(id) {
     setLogs((prev) => prev.filter((l) => l.id !== id));
     await db.deleteLog(id);
@@ -295,26 +320,18 @@ export default function App() {
         </div>
       )}
       {view === "home" && (
-        <>
-          <Home
-            logs={logs}
-            customExercises={customExercises}
-            customTemplates={customTemplates}
-            activeSession={activeSession}
-            onStart={startWorkout}
-            onResume={resumeWorkout}
-            onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
-            onCreateTemplate={async (name) => { const t = await createTemplate(name); setActiveTemplate(t); setView("edit"); }}
-            onDuplicateTemplate={duplicateTemplate}
-            onDeleteTemplate={removeCustomTemplate}
-            onLogout={() => { localStorage.removeItem("auth"); setAuthenticated(false); }}
-            theme={theme}
-            onToggleTheme={toggleTheme}
-          />
-          <button className="history-btn" onClick={() => setView("history")}>
-            Historik ({logs.length})
-          </button>
-        </>
+        <Home
+          logs={logs}
+          customExercises={customExercises}
+          customTemplates={customTemplates}
+          activeSession={activeSession}
+          onStart={startWorkout}
+          onResume={resumeWorkout}
+          onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
+          onCreateTemplate={async (name) => { const t = await createTemplate(name); setActiveTemplate(t); setView("edit"); }}
+          onDuplicateTemplate={duplicateTemplate}
+          onDeleteTemplate={removeCustomTemplate}
+        />
       )}
       {view === "edit" && activeTemplate && (
         <EditPass
@@ -349,7 +366,6 @@ export default function App() {
           logs={logs}
           customNames={customNames}
           customExercises={customExercises}
-          onBack={() => setView("home")}
           onDelete={deleteLog}
           onUpdateTimestamps={updateLogTimestamps}
           onProgress={() => setView("progress")}
@@ -360,11 +376,22 @@ export default function App() {
           logs={logs}
           customNames={customNames}
           customExercises={customExercises}
-          onBack={() => setView("history")}
+        />
+      )}
+      {view === "tools" && (
+        <Tools
+          theme={theme}
+          onSelectTheme={selectTheme}
+          onLogout={() => { localStorage.removeItem("auth"); setAuthenticated(false); }}
         />
       )}
       <RestTimer {...timer} />
-      <PlateCalculator />
+      <TabBar
+        view={view}
+        hasActiveSession={!!activeSession}
+        onNavigate={navigate}
+        onStart={handleStartTab}
+      />
     </div>
   );
 }
