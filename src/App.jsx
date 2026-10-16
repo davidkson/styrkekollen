@@ -8,19 +8,16 @@ import Login from "./components/Login";
 import MigratePrompt from "./components/MigratePrompt";
 import Tools from "./components/Tools";
 import TabBar from "./components/TabBar";
-import RestTimer from "./components/RestTimer";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
 import { useTheme } from "./hooks/useTheme";
-import { useRestTimer, fmt } from "./hooks/useRestTimer";
+import { useRestTimer } from "./hooks/useRestTimer";
 import { useSwipeBack } from "./hooks/useSwipeBack";
 import "./App.css";
 
 export default function App() {
   const { theme, toggle: toggleTheme, select: selectTheme } = useTheme();
   const timer = useRestTimer();
-  const [adjStep, setAdjStep] = useState(15);
-  const longPressRef = useRef(null);
   const [authenticated, setAuthenticated] = useState(() => localStorage.getItem("auth") === "1");
   const [showMigrate, setShowMigrate] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -40,28 +37,6 @@ export default function App() {
     setView("home");
     setActiveTemplate(null);
   }, view === "edit");
-
-  function handleAdjPointerDown() {
-    longPressRef.current = setTimeout(() => {
-      setAdjStep((s) => (s === 15 ? 5 : 15));
-      longPressRef.current = null;
-    }, 500);
-  }
-
-  function handleAdjPointerUp(delta) {
-    if (longPressRef.current) {
-      clearTimeout(longPressRef.current);
-      longPressRef.current = null;
-      timer.adjust(delta);
-    }
-  }
-
-  function handleAdjPointerLeave() {
-    if (longPressRef.current) {
-      clearTimeout(longPressRef.current);
-      longPressRef.current = null;
-    }
-  }
 
   useEffect(() => {
     if (!authenticated) { setLoading(false); return; }
@@ -292,33 +267,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app${view === "session" ? " app-timer-active" : ""}`}>
-      {view === "session" && (
-        <div className={`sticky-timer-bar${timer.running ? " sticky-timer-bar--running" : ""}`}>
-          <span className="sticky-timer-digits">{fmt(timer.remaining)}</span>
-          <div className="sticky-timer-track">
-            <div className="sticky-timer-fill" style={{ width: `${timer.progress * 100}%` }} />
-          </div>
-          <div className="sticky-timer-controls">
-            <button className="sticky-timer-btn" onClick={timer.toggle} title={timer.running ? "Pausa" : "Starta"}>
-              {timer.done ? "↺" : timer.running ? "⏸" : "▶"}
-            </button>
-            <button className="sticky-timer-btn sticky-timer-btn--reset" onClick={timer.reset} title="Börja om">↺</button>
-            <button
-              className="sticky-timer-btn sticky-timer-btn--adj"
-              onPointerDown={handleAdjPointerDown}
-              onPointerUp={() => handleAdjPointerUp(-adjStep)}
-              onPointerLeave={handleAdjPointerLeave}
-            >−{adjStep}</button>
-            <button
-              className="sticky-timer-btn sticky-timer-btn--adj"
-              onPointerDown={handleAdjPointerDown}
-              onPointerUp={() => handleAdjPointerUp(+adjStep)}
-              onPointerLeave={handleAdjPointerLeave}
-            >+{adjStep}</button>
-          </div>
-        </div>
-      )}
+    <div className="app">
       {view === "home" && (
         <Home
           logs={logs}
@@ -351,6 +300,7 @@ export default function App() {
           previousLog={previousLog(activeTemplate.id)}
           customNames={customNames}
           startedAt={activeSession?.startedAt}
+          timer={timer}
           onRename={renameExercise}
           onSave={saveSessionState}
           onAddExercise={(ex) => addExercise(activeTemplate.id, ex)}
@@ -385,7 +335,6 @@ export default function App() {
           onLogout={() => { localStorage.removeItem("auth"); setAuthenticated(false); }}
         />
       )}
-      <RestTimer {...timer} />
       <TabBar
         view={view}
         hasActiveSession={!!activeSession}
