@@ -655,12 +655,9 @@ button {
 }
 
 .home-title {
-  font-family: "Bebas Neue", sans-serif;
   font-size: 2.6rem;
-  font-weight: 400;
-  /* Bebas Neue är en kondenserad versalfont och behöver positiv spärr
-     trots displaystorleken — --track-display gäller normalbreda fonter */
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: var(--track-display);
   color: var(--accent);
   line-height: 1;
 }
