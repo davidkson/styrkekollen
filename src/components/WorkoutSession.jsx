@@ -120,15 +120,6 @@ function analyzeSuggestion(exSets, repsRange) {
   return { action: "maintain", suggested: prevWeight, prevWeight, reason: "Bra jobbat — kör samma vikt och sikta på fler reps" };
 }
 
-function parseRestSeconds(restStr) {
-  if (!restStr || restStr === "—") return null;
-  const minMatch = restStr.match(/(\d+)(?:[–-]\d+)?\s*min/i);
-  if (minMatch) return parseInt(minMatch[1]) * 60;
-  const sekMatch = restStr.match(/(\d+)(?:[–-]\d+)?\s*sek/i);
-  if (sekMatch) return parseInt(sekMatch[1]);
-  return null;
-}
-
 export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");

@@ -15,7 +15,9 @@ function beep() {
       osc.start(ctx.currentTime + t);
       osc.stop(ctx.currentTime + t + 0.2);
     });
-  } catch {}
+  } catch {
+    // AudioContext unavailable or blocked by autoplay policy; the beep is optional.
+  }
 }
 
 export function fmt(s) {
