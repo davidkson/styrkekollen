@@ -1,35 +1,31 @@
 import { useState } from "react";
-
-function exerciseName(exerciseId, templateId, customNames, customExercises) {
-  if (customNames && customNames[exerciseId]) return customNames[exerciseId];
-  if (customExercises && customExercises[templateId]) {
-    const found = customExercises[templateId].find(e => e.id === exerciseId);
-    if (found) return found.name;
-  }
-  return exerciseId;
-}
+import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
 
 export default function ExerciseProgress({ logs, customNames, customExercises }) {
   const [selectedExercise, setSelectedExercise] = useState(null);
 
-  // Build a map of exerciseId -> { name, sessions, maxWeight, templateId }
+  function keyFor(ex, log) {
+    const name = resolveExerciseName(ex.exerciseId, log.templateId, customNames, customExercises);
+    return { name, key: exerciseKey(name, ex.exerciseId) };
+  }
+
+  // Build a map of normalized name key -> { key, name, sessions, maxWeight }
+  // The same exercise has different ids across templates, so group by name.
   const exerciseMap = {};
   (logs || []).forEach(log => {
+    const seenInLog = new Set();
     (log.exercises || []).forEach(ex => {
-      const id = ex.exerciseId;
-      if (!exerciseMap[id]) {
-        exerciseMap[id] = {
-          id,
-          name: exerciseName(id, log.templateId, customNames, customExercises),
-          sessions: 0,
-          maxWeight: 0,
-          templateId: log.templateId,
-        };
+      const { name, key } = keyFor(ex, log);
+      if (!exerciseMap[key]) {
+        exerciseMap[key] = { key, name, sessions: 0, maxWeight: 0 };
       }
-      exerciseMap[id].sessions += 1;
+      if (!seenInLog.has(key)) {
+        seenInLog.add(key);
+        exerciseMap[key].sessions += 1;
+      }
       (ex.sets || []).forEach(s => {
         const w = parseFloat(s.weight) || 0;
-        if (w > exerciseMap[id].maxWeight) exerciseMap[id].maxWeight = w;
+        if (w > exerciseMap[key].maxWeight) exerciseMap[key].maxWeight = w;
       });
     });
   });
@@ -48,9 +44,9 @@ export default function ExerciseProgress({ logs, customNames, customExercises })
         <div className="progress-exercise-list">
           {exerciseList.map(ex => (
             <div
-              key={ex.id}
+              key={ex.key}
               className="progress-exercise-item"
-              onClick={() => setSelectedExercise(ex.id)}
+              onClick={() => setSelectedExercise(ex.key)}
             >
               <span className="progress-exercise-item-name">{ex.name}</span>
               <span className="progress-exercise-item-meta">
@@ -65,18 +61,21 @@ export default function ExerciseProgress({ logs, customNames, customExercises })
   }
 
   // --- Exercise detail view ---
-  const exId = selectedExercise;
-  const exName = exerciseMap[exId]
-    ? exerciseMap[exId].name
-    : exerciseName(exId, null, customNames, customExercises);
+  const exKey = selectedExercise;
+  const exName = exerciseMap[exKey] ? exerciseMap[exKey].name : exKey;
 
-  // Gather sessions containing this exercise, sorted by date ascending
+  // Gather sessions containing this exercise (by name key), sorted by date ascending.
+  // If several rows in one log match the same key, their sets are merged.
   const sessions = (logs || [])
-    .filter(log => (log.exercises || []).some(ex => ex.exerciseId === exId))
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .map(log => {
-      const ex = log.exercises.find(e => e.exerciseId === exId);
-      const doneSets = (ex.sets || []).filter(s => s.done || s.weight || s.reps);
+    .map(log => ({
+      log,
+      matches: (log.exercises || []).filter(ex => keyFor(ex, log).key === exKey),
+    }))
+    .filter(({ matches }) => matches.length > 0)
+    .sort((a, b) => new Date(a.log.date) - new Date(b.log.date))
+    .map(({ log, matches }) => {
+      const allSets = matches.flatMap(ex => ex.sets || []);
+      const doneSets = allSets.filter(s => s.done || s.weight || s.reps);
       let maxWeight = 0;
       let bestSet = null;
       let bestEst1RM = 0;
