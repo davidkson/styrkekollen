@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { IconPencil } from "./icons";
+import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
@@ -34,16 +35,19 @@ function est1RM(sets) {
   return best > 0 ? Math.round(best * 10) / 10 : null;
 }
 
-function getPRs(log, allLogs) {
+// keyFor(ex, log) returns the normalized name key so the same exercise is
+// matched across templates even though its exerciseId differs per template.
+function getPRs(log, allLogs, keyFor) {
   const olderLogs = allLogs.filter((l) => new Date(l.date) < new Date(log.date));
   const prs = {};
   for (const ex of log.exercises) {
     const currentMax = Math.max(...ex.sets.map((s) => parseFloat(s.weight) || 0));
     if (currentMax === 0) continue;
+    const key = keyFor(ex, log);
     let prevMax = 0;
     for (const older of olderLogs) {
-      const olderEx = older.exercises.find((e) => e.exerciseId === ex.exerciseId);
-      if (olderEx) {
+      for (const olderEx of older.exercises) {
+        if (keyFor(olderEx, older) !== key) continue;
         const w = Math.max(...olderEx.sets.map((s) => parseFloat(s.weight) || 0));
         if (w > prevMax) prevMax = w;
       }
@@ -82,8 +86,11 @@ export default function History({ logs, customNames, customExercises, onDelete, 
   }
 
   function exerciseName(templateId, exerciseId) {
-    if (customNames?.[exerciseId]) return customNames[exerciseId];
-    return customExercises?.[templateId]?.find((e) => e.id === exerciseId)?.name ?? exerciseId;
+    return resolveExerciseName(exerciseId, templateId, customNames, customExercises);
+  }
+
+  function keyFor(ex, log) {
+    return exerciseKey(exerciseName(log.templateId, ex.exerciseId), ex.exerciseId);
   }
 
   return (
@@ -104,7 +111,7 @@ export default function History({ logs, customNames, customExercises, onDelete, 
 
       {sorted.map((log) => {
         const expanded = expandedIds.has(log.id);
-        const prs = getPRs(log, logs);
+        const prs = getPRs(log, logs, keyFor);
         const hasPR = Object.keys(prs).length > 0;
         const doneSets = log.exercises.reduce((n, ex) => n + ex.sets.filter((s) => s.done || s.weight || s.reps).length, 0);
         const exCount = log.exercises.filter((ex) => ex.sets.some((s) => s.done || s.weight || s.reps)).length;
