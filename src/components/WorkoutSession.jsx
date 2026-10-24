@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
 import { exerciseKey } from "../lib/exerciseName";
+import { nextRir, rirLabel, rirSuffix } from "../lib/rir";
 import { fmt } from "../hooks/useRestTimer";
 import { IconPencil } from "./icons";
 
@@ -131,7 +132,7 @@ function shortDate(iso) {
   return d.toLocaleDateString("sv-SE", opts).replace(/\./g, "");
 }
 
-// "Förra (7 okt): 75×10, 75×10" — bodyweight exercises show reps only.
+// "Förra (7 okt): 75×10 R2, 75×10" — bodyweight exercises show reps only.
 // Sessions saved before previousSets existed fall back to the per-set prev values, without date.
 function previousLine(exData, bodyweight) {
   const legacy = !exData?.previousSets;
@@ -140,7 +141,7 @@ function previousLine(exData, bodyweight) {
     : exData.previousSets;
   if (prevSets.length === 0) return legacy ? null : "Första gången";
   const list = prevSets
-    .map((s) => (bodyweight || !s.weight ? s.reps || "—" : `${s.weight}×${s.reps || "—"}`))
+    .map((s) => (bodyweight || !s.weight ? s.reps || "—" : `${s.weight}×${s.reps || "—"}`) + rirSuffix(s.rir))
     .join(", ");
   return exData.previousDate ? `Förra (${shortDate(exData.previousDate)}): ${list}` : `Förra: ${list}`;
 }
@@ -174,7 +175,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
       previousDate: prevEx?.date ?? null,
       previousSets: (prevEx?.sets ?? [])
         .filter((s) => s.weight || s.reps)
-        .map((s) => ({ weight: s.weight ?? "", reps: s.reps ?? "" })),
+        .map((s) => ({ weight: s.weight ?? "", reps: s.reps ?? "", rir: s.rir ?? null })),
       sets: Array.from({ length: ex.sets }, (_, i) => {
         const prev = prevEx?.sets?.[i];
         return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
@@ -663,6 +664,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                   <span>Set</span>
                   {!ex.bodyweight && <span>Vikt (kg)</span>}
                   <span>Reps</span>
+                  <span>RIR</span>
                   <span>✓</span>
                 </div>
                 {sets[exIdx]?.sets.map((s, setIdx) => {
@@ -696,6 +698,9 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                         <button type="button" className="step-btn" aria-label={`Öka reps, set ${setIdx + 1}`}
                           onClick={() => adjust(exIdx, setIdx, "reps", 1)}>+</button>
                       </div>
+                      <button type="button" className={`rir-btn${s.rir == null ? " rir-btn--empty" : ""}`}
+                        aria-label={`RIR, set ${setIdx + 1}: ${s.rir == null ? "ej angivet" : rirLabel(s.rir)}`}
+                        onClick={() => update(exIdx, setIdx, "rir", (cur) => nextRir(cur.rir))}>{rirLabel(s.rir)}</button>
                       <button className={`done-btn ${s.done ? "done-active" : ""}`}
                         onClick={() => toggleDone(exIdx, setIdx)}>✓</button>
                     </div>
