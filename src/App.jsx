@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Home from "./components/Home";
 import WorkoutSession from "./components/WorkoutSession";
 import History from "./components/History";
@@ -10,7 +10,7 @@ import Tools from "./components/Tools";
 import TabBar from "./components/TabBar";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
-import { latestExerciseByKey } from "./lib/exerciseName";
+import { latestExerciseByKey, buildTemplateExercises } from "./lib/exerciseName";
 import { useTheme } from "./hooks/useTheme";
 import { useRestTimer } from "./hooks/useRestTimer";
 import { useSwipeBack } from "./hooks/useSwipeBack";
@@ -30,6 +30,10 @@ export default function App() {
   const [view, setView] = useState("home");
   const [activeTemplate, setActiveTemplate] = useState(null);
   const debounceRef = useRef(null);
+  const templateExercises = useMemo(
+    () => buildTemplateExercises(workoutTemplates, customExercises),
+    [customExercises]
+  );
 
   // Swipe back only inside a tab — never between tabs. "edit" is the only
   // sub-view of a tab (it hangs off the home tab), so that is the only place
@@ -232,8 +236,6 @@ export default function App() {
 
   // Last logged entry per exercise name, from any template, for prefilling a session
   function previousExercises() {
-    const templateExercises = { ...customExercises };
-    for (const t of workoutTemplates) templateExercises[t.id] = mergedTemplate(t).exercises;
     return latestExerciseByKey(logs, customNames, templateExercises);
   }
 
@@ -317,6 +319,7 @@ export default function App() {
           logs={logs}
           customNames={customNames}
           customExercises={customExercises}
+          templateExercises={templateExercises}
           onDelete={deleteLog}
           onUpdateTimestamps={updateLogTimestamps}
           onProgress={() => setView("progress")}
