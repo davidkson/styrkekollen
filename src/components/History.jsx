@@ -24,15 +24,17 @@ function toInputValue(iso) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// Share the file where the Web Share API supports files (mobile), otherwise download it
+// Share the file on touch devices (mobile), otherwise download it. Desktop browsers
+// on Windows/macOS also support file sharing, but a download is what you expect there.
 async function exportToOpenGym(logs, customNames, templateExercises) {
   const csv = logsToOpenGymCsv(logs, customNames, templateExercises);
   const now = new Date();
   const pad = (n) => String(n).padStart(2, "0");
   const filename = `styrkekollen-opengym-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.csv`;
   const file = new File([csv], filename, { type: "text/csv" });
+  const touchDevice = window.matchMedia("(pointer: coarse)").matches;
 
-  if (navigator.canShare?.({ files: [file] })) {
+  if (touchDevice && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: filename });
       return;
