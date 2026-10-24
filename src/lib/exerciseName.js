@@ -15,7 +15,7 @@ export function exerciseKey(name, exerciseId) {
   return normalized;
 }
 
-// Most recently logged entry ({ exerciseId, comment, sets }) per exercise key,
+// Most recently logged entry ({ exerciseId, comment, sets, date }) per exercise key,
 // across all templates — used to prefill a session with last time's numbers.
 // templateExercises maps templateId -> exercises (built-in + custom) so names resolve.
 export function latestExerciseByKey(logs, customNames, templateExercises) {
@@ -27,7 +27,7 @@ export function latestExerciseByKey(logs, customNames, templateExercises) {
       if (!ex.sets?.some((s) => s.weight || s.reps)) continue;
       const name = resolveExerciseName(ex.exerciseId, log.templateId, customNames, templateExercises);
       const key = exerciseKey(name, ex.exerciseId);
-      if (!latest[key]) latest[key] = ex;
+      if (!latest[key]) latest[key] = { ...ex, date: log.date };
     }
   }
   return latest;

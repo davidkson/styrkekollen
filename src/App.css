@@ -175,7 +175,6 @@ body {
 .edit-exercise-edit-name,
 .progress-session-date,
 .progress-exercise-item-name,
-.suggest-action,
 .session-stat-value,
 .finish-panel-val,
 .build-total-value,
@@ -2927,25 +2926,55 @@ button {
   margin: 0.25rem 0 0.5rem;
 }
 
-.suggest-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  padding: 0.45rem 0.85rem;
-  font-size: 0.85rem;
-  cursor: pointer;
+.prev-line {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.3rem;
+}
+
+.suggest-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
-  transition: background 0.15s;
+  background: none;
+  border: none;
+  padding: 0.15rem 0;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--fg-2);
+  text-align: left;
+  cursor: pointer;
 }
 
-.suggest-btn:active {
-  background: var(--surface);
+.suggest-row-text {
+  flex: 1;
+  min-width: 0;
 }
 
-.suggest-btn--active {
-  background: var(--surface);
-  border-color: var(--accent);
+.suggest-row strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.suggest-row-arrow {
+  font-weight: 700;
+}
+
+.suggest-row--increase .suggest-row-arrow { color: var(--green); }
+.suggest-row--maintain .suggest-row-arrow { color: var(--text); }
+.suggest-row--decrease .suggest-row-arrow { color: var(--danger); }
+
+.suggest-row-chevron {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.suggest-row[aria-expanded="true"] .suggest-row-chevron {
+  transform: rotate(90deg);
 }
 
 .suggest-panel {
@@ -2954,22 +2983,6 @@ button {
   border-radius: var(--radius);
   padding: 1rem;
   margin-top: 0.5rem;
-}
-
-.suggest-action {
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 0.35rem;
-}
-
-.suggest-action--increase { color: var(--green); }
-.suggest-action--maintain { color: var(--text); }
-.suggest-action--decrease { color: var(--danger); }
-
-.suggest-reason {
-  color: var(--muted);
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
 }
 
 .suggest-weight {
@@ -3006,11 +3019,6 @@ button {
   font-size: 0.82rem;
   color: var(--text);
   font-weight: 600;
-}
-
-.suggest-no-data {
-  color: var(--muted);
-  font-size: 0.85rem;
 }
 
 .suggest-apply-btn {
@@ -3154,7 +3162,6 @@ button {
 
 [data-theme="glass"] .set-adjust-btn,
 [data-theme="glass"] .superset-btn,
-[data-theme="glass"] .suggest-btn,
 [data-theme="glass"] .add-exercise-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
