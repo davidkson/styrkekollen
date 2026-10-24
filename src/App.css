@@ -2787,6 +2787,11 @@ button {
   background: var(--surface2);
 }
 
+.progress-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ── Exercise Progress ── */
 
 .progress-view {

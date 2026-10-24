@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IconPencil } from "./icons";
 import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
 import { rirSuffix } from "../lib/rir";
+import { logsToOpenGymCsv } from "../lib/openGymExport";
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
@@ -21,6 +22,34 @@ function toInputValue(iso) {
   const d = new Date(iso);
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Share the file where the Web Share API supports files (mobile), otherwise download it
+async function exportToOpenGym(logs, customNames, templateExercises) {
+  const csv = logsToOpenGymCsv(logs, customNames, templateExercises);
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const filename = `styrkekollen-opengym-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.csv`;
+  const file = new File([csv], filename, { type: "text/csv" });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: filename });
+      return;
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      // Sharing failed for another reason — fall back to a download
+    }
+  }
+
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function est1RM(sets) {
@@ -58,7 +87,7 @@ function getPRs(log, allLogs, keyFor) {
   return prs;
 }
 
-export default function History({ logs, customNames, customExercises, onDelete, onUpdateTimestamps, onProgress }) {
+export default function History({ logs, customNames, customExercises, templateExercises, onDelete, onUpdateTimestamps, onProgress }) {
   const [confirmingId, setConfirmingId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editStart, setEditStart] = useState("");
@@ -107,6 +136,14 @@ export default function History({ logs, customNames, customExercises, onDelete, 
           Övningsutveckling
         </button>
       )}
+
+      <button
+        className="progress-nav-btn"
+        disabled={logs.length === 0}
+        onClick={() => exportToOpenGym(logs, customNames, templateExercises)}
+      >
+        Exportera till openGym
+      </button>
 
       {sorted.length === 0 && <p className="empty">Inga pass loggade ännu.</p>}
 

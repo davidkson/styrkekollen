@@ -32,3 +32,13 @@ export function latestExerciseByKey(logs, customNames, templateExercises) {
   }
   return latest;
 }
+
+// templateId -> exercises for name resolution: every template's custom exercises,
+// with built-in templates' own definitions merged in so their names always resolve.
+export function buildTemplateExercises(builtinTemplates, customExercises) {
+  const templateExercises = { ...customExercises };
+  for (const t of builtinTemplates) {
+    templateExercises[t.id] = [...(t.exercises ?? []), ...(customExercises[t.id] ?? [])];
+  }
+  return templateExercises;
+}
