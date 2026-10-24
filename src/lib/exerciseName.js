@@ -23,6 +23,8 @@ export function latestExerciseByKey(logs, customNames, templateExercises) {
   const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
   for (const log of sorted) {
     for (const ex of log.exercises ?? []) {
+      // Skip entries left empty so they don't hide older real numbers
+      if (!ex.sets?.some((s) => s.weight || s.reps)) continue;
       const name = resolveExerciseName(ex.exerciseId, log.templateId, customNames, templateExercises);
       const key = exerciseKey(name, ex.exerciseId);
       if (!latest[key]) latest[key] = ex;
