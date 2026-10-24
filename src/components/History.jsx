@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IconPencil } from "./icons";
 import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
+import { rirSuffix } from "../lib/rir";
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
@@ -215,7 +216,7 @@ export default function History({ logs, customNames, customExercises, onDelete, 
                         <span className="history-ex-sets">
                           {doneSets.map((s, i) => (
                             <span key={i} className="history-set-chip">
-                              {s.weight ? `${s.weight}kg × ` : ""}{s.reps || "—"}{!s.weight ? " reps" : ""}
+                              {s.weight ? `${s.weight}kg × ` : ""}{s.reps || "—"}{!s.weight ? " reps" : ""}{rirSuffix(s.rir)}
                             </span>
                           ))}
                           {(() => { const orm = est1RM(doneSets); return orm ? <span className="orm-badge">1RM ~{orm}kg</span> : null; })()}
