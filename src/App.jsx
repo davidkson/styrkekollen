@@ -11,6 +11,7 @@ import TabBar from "./components/TabBar";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
 import { latestExerciseByKey, buildTemplateExercises } from "./lib/exerciseName";
+import { exportTemplateToOpenGym } from "./lib/openGymPlan";
 import { useTheme } from "./hooks/useTheme";
 import { useRestTimer } from "./hooks/useRestTimer";
 import { useSwipeBack } from "./hooks/useSwipeBack";
@@ -283,6 +284,7 @@ export default function App() {
           onEdit={(t) => { setActiveTemplate(t); setView("edit"); }}
           onCreateTemplate={async (name) => { const t = await createTemplate(name); setActiveTemplate(t); setView("edit"); }}
           onDuplicateTemplate={duplicateTemplate}
+          onExportTemplate={(t) => exportTemplateToOpenGym(mergedTemplate(t), previousExercises(), customNames)}
           onDeleteTemplate={removeCustomTemplate}
         />
       )}
