@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
+import { exerciseKey } from "../lib/exerciseName";
 import { fmt } from "../hooks/useRestTimer";
 import { IconPencil } from "./icons";
 
@@ -120,7 +121,7 @@ function analyzeSuggestion(exSets, repsRange) {
   return { action: "maintain", suggested: prevWeight, prevWeight, reason: "Bra jobbat — kör samma vikt och sikta på fler reps" };
 }
 
-export default function WorkoutSession({ template, savedSets, previousLog, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
+export default function WorkoutSession({ template, savedSets, previousExercises, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [sessionNote, setSessionNote] = useState("");
@@ -138,20 +139,24 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
 
   const cardRefs = useRef([]);
   const [exercises, setExercises] = useState(() => [...template.exercises]);
+
+  // Prefill from the latest log of an exercise with the same name, in any template
+  function initialSets(ex) {
+    const prevEx = previousExercises?.[exerciseKey(customNames[ex.id] ?? ex.name, ex.id)];
+    return {
+      exerciseId: ex.id,
+      comment: "",
+      previousComment: prevEx?.comment ?? "",
+      sets: Array.from({ length: ex.sets }, (_, i) => {
+        const prev = prevEx?.sets?.[i];
+        return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
+      }),
+    };
+  }
+
   const [sets, setSets] = useState(() => {
     if (savedSets) return savedSets;
-    return template.exercises.map((ex) => {
-      const prevEx = previousLog?.exercises?.find((e) => e.exerciseId === ex.id);
-      return {
-        exerciseId: ex.id,
-        comment: "",
-        previousComment: prevEx?.comment ?? "",
-        sets: Array.from({ length: ex.sets }, (_, i) => {
-          const prev = prevEx?.sets?.[i];
-          return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
-        }),
-      };
-    });
+    return template.exercises.map(initialSets);
   });
 
   useEffect(() => { onSave(sets); }, [sets]);
@@ -202,12 +207,7 @@ export default function WorkoutSession({ template, savedSets, previousLog, custo
       bodyweight: form.bodyweight,
     };
     setExercises((prev) => [...prev, newEx]);
-    setSets((prev) => [...prev, {
-      exerciseId: newEx.id,
-      comment: "",
-      previousComment: "",
-      sets: Array.from({ length: setsNum }, () => ({ weight: "", reps: "", done: false })),
-    }]);
+    setSets((prev) => [...prev, initialSets(newEx)]);
     onAddExercise(newEx);
     setForm(EMPTY_FORM);
     setFormError("");

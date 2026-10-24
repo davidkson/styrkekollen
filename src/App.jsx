@@ -10,6 +10,7 @@ import Tools from "./components/Tools";
 import TabBar from "./components/TabBar";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
+import { latestExerciseByKey } from "./lib/exerciseName";
 import { useTheme } from "./hooks/useTheme";
 import { useRestTimer } from "./hooks/useRestTimer";
 import { useSwipeBack } from "./hooks/useSwipeBack";
@@ -229,10 +230,11 @@ export default function App() {
     await db.updateLogTimestamps(id, startedAt, finishedAt);
   }
 
-  function previousLog(templateId) {
-    return logs
-      .filter((l) => l.templateId === templateId)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))[0] ?? null;
+  // Last logged entry per exercise name, from any template, for prefilling a session
+  function previousExercises() {
+    const templateExercises = { ...customExercises };
+    for (const t of workoutTemplates) templateExercises[t.id] = mergedTemplate(t).exercises;
+    return latestExerciseByKey(logs, customNames, templateExercises);
   }
 
   function hasLocalData() {
@@ -297,7 +299,7 @@ export default function App() {
         <WorkoutSession
           template={activeTemplate}
           savedSets={activeSession?.templateId === activeTemplate.id ? activeSession.sets : null}
-          previousLog={previousLog(activeTemplate.id)}
+          previousExercises={previousExercises()}
           customNames={customNames}
           startedAt={activeSession?.startedAt}
           timer={timer}
