@@ -110,15 +110,39 @@ function analyzeSuggestion(exSets, repsRange) {
 
   if (maxReps && prevReps.every(r => r >= maxReps)) {
     const suggested = prevWeight + step;
-    return { action: "increase", suggested, prevWeight, reason: `Alla set klarade ${maxReps}+ reps — dags att öka!` };
+    return { action: "increase", suggested, prevWeight, reason: `Alla set klarade ${maxReps}+ reps` };
   }
 
   if (minReps && prevReps.filter(r => r < minReps).length >= 2) {
     const suggested = prevWeight - step;
-    return { action: "decrease", suggested: Math.max(BAR_WEIGHT, suggested), prevWeight, reason: `Missade ${minReps} reps på flera set — sänk vikten` };
+    return { action: "decrease", suggested: Math.max(BAR_WEIGHT, suggested), prevWeight, reason: `Missade ${minReps} reps på flera set` };
   }
 
-  return { action: "maintain", suggested: prevWeight, prevWeight, reason: "Bra jobbat — kör samma vikt och sikta på fler reps" };
+  return { action: "maintain", suggested: prevWeight, prevWeight, reason: "Samma vikt, sikta på fler reps" };
+}
+
+const SUGGEST_ARROW = { increase: "↑", maintain: "→", decrease: "↓" };
+
+// "7 okt", with year when it isn't the current year
+function shortDate(iso) {
+  const d = new Date(iso);
+  const opts = { day: "numeric", month: "short" };
+  if (d.getFullYear() !== new Date().getFullYear()) opts.year = "numeric";
+  return d.toLocaleDateString("sv-SE", opts).replace(/\./g, "");
+}
+
+// "Förra (7 okt): 75×10, 75×10" — bodyweight exercises show reps only.
+// Sessions saved before previousSets existed fall back to the per-set prev values, without date.
+function previousLine(exData, bodyweight) {
+  const legacy = !exData?.previousSets;
+  const prevSets = legacy
+    ? (exData?.sets ?? []).filter((s) => s.prevWeight || s.prevReps).map((s) => ({ weight: s.prevWeight, reps: s.prevReps }))
+    : exData.previousSets;
+  if (prevSets.length === 0) return legacy ? null : "Första gången";
+  const list = prevSets
+    .map((s) => (bodyweight || !s.weight ? s.reps || "—" : `${s.weight}×${s.reps || "—"}`))
+    .join(", ");
+  return exData.previousDate ? `Förra (${shortDate(exData.previousDate)}): ${list}` : `Förra: ${list}`;
 }
 
 export default function WorkoutSession({ template, savedSets, previousExercises, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
@@ -147,6 +171,10 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
       exerciseId: ex.id,
       comment: "",
       previousComment: prevEx?.comment ?? "",
+      previousDate: prevEx?.date ?? null,
+      previousSets: (prevEx?.sets ?? [])
+        .filter((s) => s.weight || s.reps)
+        .map((s) => ({ weight: s.weight ?? "", reps: s.reps ?? "" })),
       sets: Array.from({ length: ex.sets }, (_, i) => {
         const prev = prevEx?.sets?.[i];
         return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
@@ -515,6 +543,8 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
           const exSets = sets[exIdx]?.sets ?? [];
           const doneCount = exSets.filter((s) => s.done).length;
           const exStatus = doneCount === 0 ? "" : doneCount === exSets.length ? " ex-done" : " ex-started";
+          const prevText = previousLine(sets[exIdx], ex.bodyweight);
+          const suggestion = ex.bodyweight ? null : analyzeSuggestion(exSets, ex.repsRange);
 
           return (
             <div
@@ -558,30 +588,29 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                 )}
               </div>
 
-              {!ex.bodyweight && sets[exIdx]?.sets.some(s => s.prevWeight) && (
+              {(prevText || suggestion) && (
                 <div className="suggest-section">
-                  <button
-                    className={`suggest-btn${suggestIdx === exIdx ? " suggest-btn--active" : ""}`}
-                    onClick={() => setSuggestIdx(suggestIdx === exIdx ? null : exIdx)}
-                  >
-                    {suggestIdx === exIdx ? "✕ Stäng" : "Föreslå vikter"}
-                  </button>
+                  {prevText && <div className="prev-line">{prevText}</div>}
+                  {suggestion && (
+                    <button
+                      className={`suggest-row suggest-row--${suggestion.action}`}
+                      aria-expanded={suggestIdx === exIdx}
+                      onClick={() => setSuggestIdx(suggestIdx === exIdx ? null : exIdx)}
+                    >
+                      <span className="suggest-row-text">
+                        <span className="suggest-row-arrow">{SUGGEST_ARROW[suggestion.action]}</span>{" "}
+                        <strong>{suggestion.suggested}kg</strong> · {suggestion.reason}
+                      </span>
+                      <span className="suggest-row-chevron" aria-hidden="true">›</span>
+                    </button>
+                  )}
 
-                  {suggestIdx === exIdx && (() => {
-                    const suggestion = analyzeSuggestion(sets[exIdx].sets, ex.repsRange);
-                    if (!suggestion) return <div className="suggest-panel"><p className="suggest-no-data">Inte tillräckligt med data från förra passet.</p></div>;
-
+                  {suggestion && suggestIdx === exIdx && (() => {
                     const plates = calcPlates(suggestion.suggested);
                     const perSide = plates ? (suggestion.suggested - BAR_WEIGHT) / 2 : null;
 
                     return (
                       <div className="suggest-panel">
-                        <div className={`suggest-action suggest-action--${suggestion.action}`}>
-                          {suggestion.action === "increase" && "↑ Öka vikt"}
-                          {suggestion.action === "maintain" && "→ Behåll vikt"}
-                          {suggestion.action === "decrease" && "↓ Sänk vikt"}
-                        </div>
-                        <div className="suggest-reason">{suggestion.reason}</div>
                         <div className="suggest-weight">
                           {suggestion.prevWeight}kg → <strong>{suggestion.suggested}kg</strong>
                         </div>
