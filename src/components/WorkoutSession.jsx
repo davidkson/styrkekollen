@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
 import { exerciseKey } from "../lib/exerciseName";
 import { nextRir, rirLabel, rirSuffix } from "../lib/rir";
+import { parseRestSec, isSupersetRest } from "../lib/rest";
 import { fmt } from "../hooks/useRestTimer";
 import { IconPencil } from "./icons";
 
@@ -321,11 +322,18 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
     }));
   }
 
+  // Superset via the rest text or the session toggle: go straight to the next exercise
+  function linksToNext(exIdx) {
+    if (exIdx >= exercises.length - 1) return false;
+    return supersets.has(exIdx) || isSupersetRest(exercises[exIdx]?.rest);
+  }
+
   function toggleDone(exIdx, setIdx) {
     let becomingDone = false;
     let allDoneAfter = false;
-    setSets((prev) =>
-      prev.map((ex, i) => {
+    let sessionDoneAfter = false;
+    setSets((prev) => {
+      const next = prev.map((ex, i) => {
         if (i !== exIdx) return ex;
         const newSets = ex.sets.map((s, j) => {
           if (j !== setIdx) return s;
@@ -334,10 +342,16 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
         });
         allDoneAfter = becomingDone && newSets.every((s) => s.done);
         return { ...ex, sets: newSets };
-      })
-    );
+      });
+      sessionDoneAfter = becomingDone && next.every((ex) => ex.sets.every((s) => s.done));
+      return next;
+    });
     if (becomingDone) {
       haptic(40);
+      // Rest with the exercise's own time; unknown format keeps the selected preset
+      if (!sessionDoneAfter && !linksToNext(exIdx)) {
+        timer.autoStart(parseRestSec(exercises[exIdx]?.rest) ?? timer.preset);
+      }
       if (allDoneAfter && !focusMode && exIdx < exercises.length - 1) {
         setTimeout(() => {
           cardRefs.current[exIdx + 1]?.scrollIntoView({ behavior: "smooth", block: "start" });

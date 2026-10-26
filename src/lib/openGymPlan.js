@@ -6,14 +6,7 @@
 import { exerciseKey } from "./exerciseName";
 import { openGymExerciseId } from "./openGymExport";
 import { deliverFile } from "./deliverFile";
-
-const DASH = "[–-]";
-const NUM = "(\\d+(?:[.,]\\d+)?)";
-
-function toNumber(value) {
-  const n = parseFloat(String(value ?? "").trim().replace(",", "."));
-  return Number.isFinite(n) ? n : null;
-}
+import { DASH, NUM, toNumber, isSupersetRest, parseRestSec } from "./rest";
 
 // "8–12", "10–12 per sida", "8", "45 sek", "max" -> openGym prescription fields.
 // openGym's reps on a per-side exercise are the total over both sides
@@ -43,22 +36,6 @@ export function parseRepsRange(repsRange) {
 
   if (core === "max") return { lastToFailure: true, ...side };
   return {};
-}
-
-export function isSupersetRest(rest) {
-  return /superset/i.test(String(rest ?? ""));
-}
-
-// "90 sek" -> 90, "2 min" -> 120, "2–3 min" / "45–60 sek" -> upper bound,
-// superset or unknown -> null
-export function parseRestSec(rest) {
-  if (isSupersetRest(rest)) return null;
-  const text = String(rest ?? "").trim().toLowerCase();
-  const m = text.match(new RegExp(`^${NUM}(?:\\s*${DASH}\\s*${NUM})?\\s*(sek|s|min)$`));
-  if (!m) return null;
-  const value = toNumber(m[2] ?? m[1]);
-  const sec = Math.round(m[3] === "min" ? value * 60 : value);
-  return sec > 0 ? sec : null;
 }
 
 // Body part for a custom exercise, guessed from its (Swedish or English) name.
