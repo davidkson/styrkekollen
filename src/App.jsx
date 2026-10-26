@@ -11,6 +11,7 @@ import TabBar from "./components/TabBar";
 import { workoutTemplates } from "./data/workouts";
 import * as db from "./lib/db";
 import { latestExerciseByKey, buildTemplateExercises } from "./lib/exerciseName";
+import { maxWeightByKey } from "./lib/pr";
 import { exportTemplateToOpenGym } from "./lib/openGymPlan";
 import { useTheme } from "./hooks/useTheme";
 import { useRestTimer } from "./hooks/useRestTimer";
@@ -240,6 +241,11 @@ export default function App() {
     return latestExerciseByKey(logs, customNames, templateExercises);
   }
 
+  // Heaviest done set per exercise name, the baseline for live PRs in a session
+  function previousMaxWeights() {
+    return maxWeightByKey(logs, customNames, templateExercises);
+  }
+
   function hasLocalData() {
     return (
       localStorage.getItem("workout-logs") ||
@@ -304,6 +310,7 @@ export default function App() {
           template={activeTemplate}
           savedSets={activeSession?.templateId === activeTemplate.id ? activeSession.sets : null}
           previousExercises={previousExercises()}
+          previousMaxWeights={previousMaxWeights()}
           customNames={customNames}
           startedAt={activeSession?.startedAt}
           timer={timer}
@@ -320,7 +327,6 @@ export default function App() {
         <History
           logs={logs}
           customNames={customNames}
-          customExercises={customExercises}
           templateExercises={templateExercises}
           onDelete={deleteLog}
           onUpdateTimestamps={updateLogTimestamps}
@@ -331,7 +337,7 @@ export default function App() {
         <ExerciseProgress
           logs={logs}
           customNames={customNames}
-          customExercises={customExercises}
+          templateExercises={templateExercises}
         />
       )}
       {view === "tools" && (

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
 import { exerciseKey } from "../lib/exerciseName";
+import { sessionPRs } from "../lib/pr";
 import { nextRir, rirLabel, rirSuffix } from "../lib/rir";
 import { parseRestSec, isSupersetRest } from "../lib/rest";
 import { fmt } from "../hooks/useRestTimer";
@@ -148,7 +149,7 @@ function previousLine(exData, bodyweight) {
   return exData.previousDate ? `Förra (${shortDate(exData.previousDate)}): ${list}` : `Förra: ${list}`;
 }
 
-export default function WorkoutSession({ template, savedSets, previousExercises, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
+export default function WorkoutSession({ template, savedSets, previousExercises, previousMaxWeights, customNames, startedAt, timer, onRename, onSave, onAddExercise, onFinish, onCancel, onAbandon, onToggleTheme }) {
   const [editingName, setEditingName] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [sessionNote, setSessionNote] = useState("");
@@ -186,6 +187,12 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
         return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
       }),
     };
+  }
+
+  // Set indices that are live PRs; bodyweight exercises have no weight to beat
+  function prSets(ex, exSets) {
+    if (ex.bodyweight) return new Set();
+    return sessionPRs(exSets, previousMaxWeights?.[exerciseKey(customNames[ex.id] ?? ex.name, ex.id)]);
   }
 
   const [sets, setSets] = useState(() => {
@@ -333,6 +340,9 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   }
 
   function toggleDone(exIdx, setIdx) {
+    // PR check from current state, outside the updater, for the extra haptic
+    const setsAfter = (sets[exIdx]?.sets ?? []).map((s, j) => (j === setIdx ? { ...s, done: !s.done } : s));
+    const isPR = !!setsAfter[setIdx]?.done && prSets(exercises[exIdx], setsAfter).has(setIdx);
     let becomingDone = false;
     let allDoneAfter = false;
     let sessionDoneAfter = false;
@@ -351,7 +361,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
       return next;
     });
     if (becomingDone) {
-      haptic(40);
+      haptic(isPR ? [40, 60, 120] : 40);
       // Rest with the exercise's own time; unknown format keeps the selected preset
       if (!sessionDoneAfter && !linksToNext(exIdx)) {
         timer.autoStart(parseRestSec(exercises[exIdx]?.rest) ?? timer.preset);
@@ -564,6 +574,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
           const exStatus = doneCount === 0 ? "" : doneCount === exSets.length ? " ex-done" : " ex-started";
           const prevText = previousLine(sets[exIdx], ex.bodyweight);
           const suggestion = ex.bodyweight ? null : analyzeSuggestion(exSets, ex.repsRange);
+          const prs = prSets(ex, exSets);
 
           return (
             <div
@@ -721,6 +732,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                         onClick={() => update(exIdx, setIdx, "rir", (cur) => nextRir(cur.rir))}>{rirLabel(s.rir)}</button>
                       <button className={`done-btn ${s.done ? "done-active" : ""}`}
                         onClick={() => toggleDone(exIdx, setIdx)}>✓</button>
+                      {prs.has(setIdx) && <span className="pr-badge set-pr-badge">PR</span>}
                     </div>
                   );
                 })}
