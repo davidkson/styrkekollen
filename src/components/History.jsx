@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IconPencil } from "./icons";
 import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
 import { maxWeight } from "../lib/pr";
+import { isWarmup, workingSets } from "../lib/warmup";
 import { rirSuffix } from "../lib/rir";
 import { logsToOpenGymCsv } from "../lib/openGymExport";
 import { deliverFile } from "../lib/deliverFile";
@@ -135,10 +136,11 @@ export default function History({ logs, customNames, templateExercises, onDelete
         const expanded = expandedIds.has(log.id);
         const prs = getPRs(log, logs, keyFor);
         const hasPR = Object.keys(prs).length > 0;
-        const doneSets = log.exercises.reduce((n, ex) => n + ex.sets.filter((s) => s.done || s.weight || s.reps).length, 0);
-        const exCount = log.exercises.filter((ex) => ex.sets.some((s) => s.done || s.weight || s.reps)).length;
+        // Warm-up sets are shown but not counted
+        const doneSets = log.exercises.reduce((n, ex) => n + workingSets(ex.sets).filter((s) => s.done || s.weight || s.reps).length, 0);
+        const exCount = log.exercises.filter((ex) => workingSets(ex.sets).some((s) => s.done || s.weight || s.reps)).length;
         const volume = log.exercises.reduce((sum, ex) =>
-          sum + ex.sets.filter((s) => s.weight && s.reps)
+          sum + workingSets(ex.sets).filter((s) => s.weight && s.reps)
             .reduce((s2, s) => s2 + parseFloat(s.weight) * parseInt(s.reps), 0), 0);
 
         return (
@@ -236,11 +238,12 @@ export default function History({ logs, customNames, templateExercises, onDelete
                         </span>
                         <span className="history-ex-sets">
                           {doneSets.map((s, i) => (
-                            <span key={i} className="history-set-chip">
+                            <span key={i} className={`history-set-chip${isWarmup(s) ? " history-set-chip--warmup" : ""}`}>
+                              {isWarmup(s) && <span className="history-set-chip-tag" title="Uppvärmning">U</span>}
                               {s.weight ? `${s.weight}kg × ` : ""}{s.reps || "—"}{!s.weight ? " reps" : ""}{rirSuffix(s.rir)}
                             </span>
                           ))}
-                          {(() => { const orm = est1RM(doneSets); return orm ? <span className="orm-badge">1RM ~{orm}kg</span> : null; })()}
+                          {(() => { const orm = est1RM(workingSets(doneSets)); return orm ? <span className="orm-badge">1RM ~{orm}kg</span> : null; })()}
                         </span>
                       </div>
                     );

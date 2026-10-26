@@ -1,4 +1,5 @@
 import { resolveExerciseName, exerciseKey } from "./exerciseName";
+import { isWarmup, workingSets } from "./warmup";
 
 // Weight in kg as a number; accepts a decimal comma ("82,5"). Empty or invalid -> 0.
 export function parseWeight(weight) {
@@ -6,9 +7,10 @@ export function parseWeight(weight) {
 }
 
 // Heaviest weight among the given sets — the PR rule shared by History and the session.
-// Callers pick which sets count (History: all logged sets, session: done sets).
+// Callers pick which sets count (History: all logged sets, session: done sets);
+// warm-up sets never count.
 export function maxWeight(sets) {
-  return (sets ?? []).reduce((max, s) => Math.max(max, parseWeight(s.weight)), 0);
+  return workingSets(sets).reduce((max, s) => Math.max(max, parseWeight(s.weight)), 0);
 }
 
 // Heaviest done set per exercise key across all logs, the baseline for live PRs.
@@ -28,13 +30,13 @@ export function maxWeightByKey(logs, customNames, templateExercises) {
 }
 
 // Indices of done sets that beat both the logged max and every earlier done set
-// of the exercise in this session. No PRs without history (prevMax 0).
+// of the exercise in this session. No PRs without history (prevMax 0) or on warm-ups.
 export function sessionPRs(sets, prevMax) {
   const prs = new Set();
   if (!(prevMax > 0)) return prs;
   let best = prevMax;
   sets.forEach((s, i) => {
-    if (!s.done) return;
+    if (!s.done || isWarmup(s)) return;
     const w = parseWeight(s.weight);
     if (w > best) {
       prs.add(i);

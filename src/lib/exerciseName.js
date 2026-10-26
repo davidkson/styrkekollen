@@ -1,3 +1,5 @@
+import { workingSets } from "./warmup";
+
 // Resolve the display name of a logged exercise.
 // Priority: user rename (customNames) -> template definition (customExercises) -> raw id.
 export function resolveExerciseName(exerciseId, templateId, customNames, customExercises) {
@@ -17,17 +19,19 @@ export function exerciseKey(name, exerciseId) {
 
 // Most recently logged entry ({ exerciseId, comment, sets, date }) per exercise key,
 // across all templates — used to prefill a session with last time's numbers.
+// Warm-up sets are left out of `sets`, so they never become the prefill.
 // templateExercises maps templateId -> exercises (built-in + custom) so names resolve.
 export function latestExerciseByKey(logs, customNames, templateExercises) {
   const latest = {};
   const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
   for (const log of sorted) {
     for (const ex of log.exercises ?? []) {
+      const sets = workingSets(ex.sets);
       // Skip entries left empty so they don't hide older real numbers
-      if (!ex.sets?.some((s) => s.weight || s.reps)) continue;
+      if (!sets.some((s) => s.weight || s.reps)) continue;
       const name = resolveExerciseName(ex.exerciseId, log.templateId, customNames, templateExercises);
       const key = exerciseKey(name, ex.exerciseId);
-      if (!latest[key]) latest[key] = { ...ex, date: log.date };
+      if (!latest[key]) latest[key] = { ...ex, sets, date: log.date };
     }
   }
   return latest;

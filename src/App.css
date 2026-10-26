@@ -1228,6 +1228,30 @@ button {
   gap: 2px;
 }
 
+/* Setnumret växlar uppvärmning (#61); fyller den smala kolumnen på höjden */
+.set-number-btn {
+  width: 100%;
+  min-height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.set-number-btn:hover { color: var(--text); }
+
+.set-row--warmup .set-number-btn {
+  border: 1px dashed var(--border);
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.set-row--warmup .set-stepper input { color: var(--fg-2); }
+
 .copy-prev-btn {
   background: none;
   border: none;
@@ -1603,6 +1627,16 @@ button {
   padding: 2px 8px;
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
+}
+
+.history-set-chip--warmup {
+  color: var(--fg-3);
+  border-style: dashed;
+}
+
+.history-set-chip-tag {
+  margin-right: 4px;
+  font-weight: 600;
 }
 
 .orm-badge {
@@ -3283,6 +3317,8 @@ button {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+[data-theme="glass"] .history-set-chip--warmup { border-style: dashed; }
 
 /* Template cards hover glow */
 [data-theme="glass"] .template-card:active {

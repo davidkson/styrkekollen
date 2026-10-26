@@ -6,6 +6,7 @@
 import { exerciseKey } from "./exerciseName";
 import { openGymExerciseId } from "./openGymExport";
 import { deliverFile } from "./deliverFile";
+import { workingSets } from "./warmup";
 import { DASH, NUM, toNumber, isSupersetRest, parseRestSec } from "./rest";
 
 // "8–12", "10–12 per sida", "8", "45 sek", "max" -> openGym prescription fields.
@@ -60,9 +61,9 @@ export function guessBodyPart(name) {
   return "chest";
 }
 
-// Starting weight: first checked-off set with a weight, otherwise the first set with one
+// Starting weight: first checked-off working set with a weight, otherwise the first one with one
 function previousWeight(prevEx) {
-  const sets = prevEx?.sets ?? [];
+  const sets = workingSets(prevEx?.sets);
   const weighted = (s) => toNumber(s.weight) > 0;
   const set = sets.find((s) => s.done && weighted(s)) ?? sets.find(weighted);
   return set ? toNumber(set.weight) : null;
@@ -71,7 +72,7 @@ function previousWeight(prevEx) {
 // Rep target for a "max" exercise (openGym needs a number to open the sets at):
 // last time's reps, otherwise openGym's default of 10
 function previousReps(prevEx) {
-  const sets = prevEx?.sets ?? [];
+  const sets = workingSets(prevEx?.sets);
   const withReps = (s) => parseInt(s.reps) > 0;
   const set = sets.find((s) => s.done && withReps(s)) ?? sets.find(withReps);
   return set ? parseInt(set.reps) : 10;
