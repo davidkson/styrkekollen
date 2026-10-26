@@ -3,6 +3,7 @@ import { haptic } from "../lib/haptic";
 import { exerciseKey } from "../lib/exerciseName";
 import { nextRir, rirLabel, rirSuffix } from "../lib/rir";
 import { fmt } from "../hooks/useRestTimer";
+import { useWakeLock } from "../hooks/useWakeLock";
 import { IconPencil } from "./icons";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek", bodyweight: false };
@@ -161,6 +162,9 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   const [formError, setFormError] = useState("");
   const [supersets, setSupersets] = useState(new Set());
   const [suggestIdx, setSuggestIdx] = useState(null);
+
+  // Keep the screen on between sets while the session view is shown
+  useWakeLock();
 
   const cardRefs = useRef([]);
   const [exercises, setExercises] = useState(() => [...template.exercises]);
