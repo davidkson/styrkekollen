@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { haptic } from "../lib/haptic";
 import { exerciseKey } from "../lib/exerciseName";
 import { sessionPRs } from "../lib/pr";
+import { isWarmup, workingSets, setLabels } from "../lib/warmup";
 import { nextRir, rirLabel, rirSuffix } from "../lib/rir";
 import { parseRestSec, isSupersetRest } from "../lib/rest";
 import { fmt } from "../hooks/useRestTimer";
@@ -18,6 +19,23 @@ function fmtElapsed(totalSeconds) {
   const mm = String(m).padStart(2, "0");
   const ss = String(s).padStart(2, "0");
   return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+}
+
+// Last time's working set k is the prefill for today's working set k; warm-ups get none.
+// Sets beyond last time's count keep what they have. Sessions saved before
+// previousSets existed are left as they are.
+function withPrevious(exData) {
+  const prevSets = exData.previousSets;
+  if (!prevSets) return exData;
+  let k = 0;
+  return {
+    ...exData,
+    sets: exData.sets.map((s) => {
+      if (isWarmup(s)) return { ...s, prevWeight: "", prevReps: "" };
+      const prev = prevSets[k++];
+      return prev ? { ...s, prevWeight: prev.weight, prevReps: prev.reps } : s;
+    }),
+  };
 }
 
 // Own component so the ticking clock re-renders the clock, not the exercise list
@@ -102,7 +120,7 @@ function analyzeSuggestion(exSets, repsRange) {
   const minReps = rangeMatch ? parseInt(rangeMatch[1]) : null;
   const maxReps = rangeMatch ? parseInt(rangeMatch[2]) : null;
 
-  const prevSets = exSets.filter(s => s.prevWeight && s.prevReps);
+  const prevSets = workingSets(exSets).filter(s => s.prevWeight && s.prevReps);
   if (prevSets.length === 0) return null;
 
   const prevWeight = parseFloat(prevSets[0].prevWeight);
@@ -140,7 +158,7 @@ function shortDate(iso) {
 function previousLine(exData, bodyweight) {
   const legacy = !exData?.previousSets;
   const prevSets = legacy
-    ? (exData?.sets ?? []).filter((s) => s.prevWeight || s.prevReps).map((s) => ({ weight: s.prevWeight, reps: s.prevReps }))
+    ? workingSets(exData?.sets).filter((s) => s.prevWeight || s.prevReps).map((s) => ({ weight: s.prevWeight, reps: s.prevReps }))
     : exData.previousSets;
   if (prevSets.length === 0) return legacy ? null : "Första gången";
   const list = prevSets
@@ -171,19 +189,21 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   const cardRefs = useRef([]);
   const [exercises, setExercises] = useState(() => [...template.exercises]);
 
-  // Prefill from the latest log of an exercise with the same name, in any template
+  // Prefill from the latest log of an exercise with the same name, in any template.
+  // Only last time's working sets count, so warm-ups never become the prefill.
   function initialSets(ex) {
     const prevEx = previousExercises?.[exerciseKey(customNames[ex.id] ?? ex.name, ex.id)];
+    const previousSets = workingSets(prevEx?.sets)
+      .filter((s) => s.weight || s.reps)
+      .map((s) => ({ weight: s.weight ?? "", reps: s.reps ?? "", rir: s.rir ?? null }));
     return {
       exerciseId: ex.id,
       comment: "",
       previousComment: prevEx?.comment ?? "",
       previousDate: prevEx?.date ?? null,
-      previousSets: (prevEx?.sets ?? [])
-        .filter((s) => s.weight || s.reps)
-        .map((s) => ({ weight: s.weight ?? "", reps: s.reps ?? "", rir: s.rir ?? null })),
+      previousSets,
       sets: Array.from({ length: ex.sets }, (_, i) => {
-        const prev = prevEx?.sets?.[i];
+        const prev = previousSets[i];
         return { weight: prev?.weight ?? "", reps: prev?.reps ?? "", done: false, prevWeight: prev?.weight ?? "", prevReps: prev?.reps ?? "" };
       }),
     };
@@ -319,8 +339,23 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   function addSet(exIdx) {
     setSets((prev) => prev.map((ex, i) => {
       if (i !== exIdx) return ex;
-      const last = ex.sets[ex.sets.length - 1];
-      return { ...ex, sets: [...ex.sets, { weight: "", reps: "", done: false, prevWeight: last?.prevWeight ?? "", prevReps: last?.prevReps ?? "" }] };
+      // Beyond last time's sets the new set repeats the last working set's prefill
+      const last = workingSets(ex.sets).at(-1);
+      return withPrevious({ ...ex, sets: [...ex.sets, { weight: "", reps: "", done: false, prevWeight: last?.prevWeight ?? "", prevReps: last?.prevReps ?? "" }] });
+    }));
+  }
+
+  // Tapping the set number switches between working set and warm-up
+  function toggleWarmup(exIdx, setIdx) {
+    haptic(15);
+    setSets((prev) => prev.map((ex, i) => {
+      if (i !== exIdx) return ex;
+      const sets = ex.sets.map((s, j) => {
+        if (j !== setIdx) return s;
+        const { warmup, ...rest } = s;
+        return warmup ? rest : { ...rest, warmup: true };
+      });
+      return withPrevious({ ...ex, sets });
     }));
   }
 
@@ -399,11 +434,12 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
     });
   }
 
-  const totalDone = sets.reduce((sum, ex) => sum + ex.sets.filter((s) => s.done).length, 0);
-  const totalSets = sets.reduce((sum, ex) => sum + ex.sets.length, 0);
-  const exDone = sets.filter((ex) => ex.sets.some((s) => s.done)).length;
+  // Warm-up sets don't count toward set totals or volume
+  const totalDone = sets.reduce((sum, ex) => sum + workingSets(ex.sets).filter((s) => s.done).length, 0);
+  const totalSets = sets.reduce((sum, ex) => sum + workingSets(ex.sets).length, 0);
+  const exDone = sets.filter((ex) => workingSets(ex.sets).some((s) => s.done)).length;
   const totalVolume = sets.reduce((sum, ex) =>
-    sum + ex.sets.filter((s) => s.done && s.weight && s.reps)
+    sum + workingSets(ex.sets).filter((s) => s.done && s.weight && s.reps)
       .reduce((s2, s) => s2 + parseFloat(s.weight) * parseInt(s.reps), 0), 0);
 
   const restVisible = timer.running || timer.done || restOpen;
@@ -575,6 +611,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
           const prevText = previousLine(sets[exIdx], ex.bodyweight);
           const suggestion = ex.bodyweight ? null : analyzeSuggestion(exSets, ex.repsRange);
           const prs = prSets(ex, exSets);
+          const labels = setLabels(exSets);
 
           return (
             <div
@@ -675,12 +712,12 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                           onClick={() => {
                             setSets(prev => prev.map((exData, i) => {
                               if (i !== exIdx) return exData;
-                              return { ...exData, sets: exData.sets.map(s => ({ ...s, weight: String(suggestion.suggested) })) };
+                              return { ...exData, sets: exData.sets.map(s => isWarmup(s) ? s : { ...s, weight: String(suggestion.suggested) }) };
                             }));
                             setSuggestIdx(null);
                           }}
                         >
-                          Använd {suggestion.suggested}kg på alla set
+                          Använd {suggestion.suggested}kg på alla arbetsset
                         </button>
                       </div>
                     );
@@ -699,36 +736,40 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                 {sets[exIdx]?.sets.map((s, setIdx) => {
                   const prev = setIdx > 0 ? sets[exIdx].sets[setIdx - 1] : null;
                   const canCopy = prev && (prev.weight || prev.reps);
+                  const warm = isWarmup(s);
+                  const setName = warm ? "uppvärmning" : `set ${labels[setIdx]}`;
                   return (
-                    <div key={setIdx} className={`set-row${ex.bodyweight ? " set-row--bw" : ""} ${s.done ? "set-done" : ""}`}>
-                      <span className="set-number">
-                        {setIdx + 1}
+                    <div key={setIdx} className={`set-row${ex.bodyweight ? " set-row--bw" : ""}${warm ? " set-row--warmup" : ""} ${s.done ? "set-done" : ""}`}>
+                      <div className="set-number">
+                        <button type="button" className="set-number-btn" title="Växla uppvärmning"
+                          aria-label={`Uppvärmning, rad ${setIdx + 1}`} aria-pressed={warm}
+                          onClick={() => toggleWarmup(exIdx, setIdx)}>{labels[setIdx]}</button>
                         {canCopy && (
-                          <button className="copy-prev-btn" title="Kopiera föregående rad" onClick={() => copyPrev(exIdx, setIdx)}>↓</button>
+                          <button type="button" className="copy-prev-btn" title="Kopiera föregående rad" onClick={() => copyPrev(exIdx, setIdx)}>↓</button>
                         )}
-                      </span>
+                      </div>
                       {!ex.bodyweight && (
                         <div className="set-stepper set-stepper--weight">
-                          <button type="button" className="step-btn" aria-label={`Minska vikt, set ${setIdx + 1}`}
+                          <button type="button" className="step-btn" aria-label={`Minska vikt, ${setName}`}
                             onClick={() => adjust(exIdx, setIdx, "weight", -1)}>−</button>
-                          <input type="number" min="0" step="0.5" aria-label={`Vikt i kg, set ${setIdx + 1}`}
+                          <input type="number" min="0" step="0.5" aria-label={`Vikt i kg, ${setName}`}
                             placeholder={s.prevWeight || "—"} value={s.weight}
                             onChange={(e) => update(exIdx, setIdx, "weight", e.target.value)} />
-                          <button type="button" className="step-btn" aria-label={`Öka vikt, set ${setIdx + 1}`}
+                          <button type="button" className="step-btn" aria-label={`Öka vikt, ${setName}`}
                             onClick={() => adjust(exIdx, setIdx, "weight", 1)}>+</button>
                         </div>
                       )}
                       <div className="set-stepper set-stepper--reps">
-                        <button type="button" className="step-btn" aria-label={`Minska reps, set ${setIdx + 1}`}
+                        <button type="button" className="step-btn" aria-label={`Minska reps, ${setName}`}
                           onClick={() => adjust(exIdx, setIdx, "reps", -1)}>−</button>
-                        <input type="number" min="0" aria-label={`Antal reps, set ${setIdx + 1}`}
+                        <input type="number" min="0" aria-label={`Antal reps, ${setName}`}
                           placeholder={s.prevReps || "—"} value={s.reps}
                           onChange={(e) => update(exIdx, setIdx, "reps", e.target.value)} />
-                        <button type="button" className="step-btn" aria-label={`Öka reps, set ${setIdx + 1}`}
+                        <button type="button" className="step-btn" aria-label={`Öka reps, ${setName}`}
                           onClick={() => adjust(exIdx, setIdx, "reps", 1)}>+</button>
                       </div>
                       <button type="button" className={`rir-btn${s.rir == null ? " rir-btn--empty" : ""}`}
-                        aria-label={`RIR, set ${setIdx + 1}: ${s.rir == null ? "ej angivet" : rirLabel(s.rir)}`}
+                        aria-label={`RIR, ${setName}: ${s.rir == null ? "ej angivet" : rirLabel(s.rir)}`}
                         onClick={() => update(exIdx, setIdx, "rir", (cur) => nextRir(cur.rir))}>{rirLabel(s.rir)}</button>
                       <button className={`done-btn ${s.done ? "done-active" : ""}`}
                         onClick={() => toggleDone(exIdx, setIdx)}>✓</button>

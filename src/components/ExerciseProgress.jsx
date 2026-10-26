@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
+import { workingSets } from "../lib/warmup";
 
 export default function ExerciseProgress({ logs, customNames, templateExercises }) {
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -23,7 +24,7 @@ export default function ExerciseProgress({ logs, customNames, templateExercises 
         seenInLog.add(key);
         exerciseMap[key].sessions += 1;
       }
-      (ex.sets || []).forEach(s => {
+      workingSets(ex.sets).forEach(s => {
         const w = parseFloat(s.weight) || 0;
         if (w > exerciseMap[key].maxWeight) exerciseMap[key].maxWeight = w;
       });
@@ -74,7 +75,8 @@ export default function ExerciseProgress({ logs, customNames, templateExercises 
     .filter(({ matches }) => matches.length > 0)
     .sort((a, b) => new Date(a.log.date) - new Date(b.log.date))
     .map(({ log, matches }) => {
-      const allSets = matches.flatMap(ex => ex.sets || []);
+      // Warm-up sets don't count toward max, 1RM, volume or set count
+      const allSets = matches.flatMap(ex => workingSets(ex.sets));
       const doneSets = allSets.filter(s => s.done || s.weight || s.reps);
       let maxWeight = 0;
       let bestSet = null;

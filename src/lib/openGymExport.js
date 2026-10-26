@@ -1,8 +1,10 @@
 // Export the workout history as a CSV that openGym can import
 // (Settings → Data & backup → Import from another app). One row per completed set.
+// openGym recognizes warm-ups by /warm/i in the "set type" column.
 import { resolveExerciseName, exerciseKey } from "./exerciseName";
+import { isWarmup } from "./warmup";
 
-const HEADER = ["workout name", "exercise", "date", "end time", "weight kg", "reps", "rir", "notes", "workout notes"];
+const HEADER = ["workout name", "exercise", "date", "end time", "weight kg", "reps", "rir", "set type", "notes", "workout notes"];
 
 // Swedish exercise name (keyed by exerciseKey) -> openGym library entry:
 // `name` is the English name openGym's CSV import (matchExercise) resolves to the
@@ -95,6 +97,7 @@ export function logsToOpenGymCsv(logs, customNames, templateExercises) {
           weight,
           reps,
           Number.isFinite(set.rir) ? String(set.rir) : "",
+          isWarmup(set) ? "warmup" : "",
           firstExRow ? ex.comment ?? "" : "",
           firstLogRow ? log.note ?? "" : "",
         ]);
