@@ -3,7 +3,7 @@ import { workoutTemplates } from "../data/workouts";
 
 const demoTemplates = workoutTemplates.filter((t) => t.demo);
 
-export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDuplicateTemplate, onDeleteTemplate, logs, activeSession, customExercises, customTemplates }) {
+export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDuplicateTemplate, onExportTemplate, onDeleteTemplate, logs, activeSession, customExercises, customTemplates }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
@@ -135,6 +135,7 @@ export default function Home({ onStart, onResume, onEdit, onCreateTemplate, onDu
                             <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setOpenMenuId(null); onEdit(t); }}>Redigera</button>
                           )}
                           <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setOpenMenuId(null); onDuplicateTemplate(t); }}>Duplicera</button>
+                          <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setOpenMenuId(null); onExportTemplate(t); }}>Exportera till openGym</button>
                           {custom && (
                             <button type="button" role="menuitem" className="card-menu-item card-menu-item--danger" onClick={() => { setOpenMenuId(null); setConfirmingDeleteId(t.id); }}>Ta bort</button>
                           )}
