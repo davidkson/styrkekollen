@@ -2104,6 +2104,12 @@ button {
   background: var(--accent-soft);
 }
 
+.card-menu-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: none;
+}
+
 .card-menu-item--danger {
   color: var(--danger);
 }

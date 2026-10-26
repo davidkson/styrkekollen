@@ -5,6 +5,7 @@ import { sessionPRs } from "../lib/pr";
 import { isWarmup, workingSets, setLabels } from "../lib/warmup";
 import { nextRir, rirLabel, rirSuffix } from "../lib/rir";
 import { parseRestSec, isSupersetRest } from "../lib/rest";
+import { exerciseBlocks, canShuffle, shuffleOrder, remapSupersets, restoreOrder } from "../lib/sessionOrder";
 import { fmt } from "../hooks/useRestTimer";
 import { useWakeLock } from "../hooks/useWakeLock";
 import { IconPencil } from "./icons";
@@ -187,7 +188,6 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   useWakeLock();
 
   const cardRefs = useRef([]);
-  const [exercises, setExercises] = useState(() => [...template.exercises]);
 
   // Prefill from the latest log of an exercise with the same name, in any template.
   // Only last time's working sets count, so warm-ups never become the prefill.
@@ -215,10 +215,14 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
     return sessionPRs(exSets, previousMaxWeights?.[exerciseKey(customNames[ex.id] ?? ex.name, ex.id)]);
   }
 
-  const [sets, setSets] = useState(() => {
-    if (savedSets) return savedSets;
-    return template.exercises.map(initialSets);
-  });
+  // A resumed session keeps its own order; exercises and sets start out parallel
+  const [initial] = useState(() =>
+    savedSets
+      ? restoreOrder(template.exercises, savedSets)
+      : { exercises: [...template.exercises], sets: template.exercises.map(initialSets) }
+  );
+  const [exercises, setExercises] = useState(initial.exercises);
+  const [sets, setSets] = useState(initial.sets);
 
   useEffect(() => { onSave(sets); }, [sets]);
 
@@ -336,6 +340,18 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
     setSupersets(new Set());
   }
 
+  // Started exercises stay on top; untouched ones are shuffled, supersets as blocks
+  function shuffleExercises() {
+    const blocks = exerciseBlocks(exercises.length, linksToNext, isStarted);
+    const order = shuffleOrder(blocks);
+    haptic(30);
+    setExercises(order.map((i) => exercises[i]));
+    setSets(order.map((i) => sets[i]));
+    setSupersets(remapSupersets(supersets, order));
+    setSuggestIdx(null);
+    if (focusMode) setFocusIdx(blocks.filter((b) => b.started).reduce((n, b) => n + b.indices.length, 0));
+  }
+
   function addSet(exIdx) {
     setSets((prev) => prev.map((ex, i) => {
       if (i !== exIdx) return ex;
@@ -372,6 +388,10 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   function linksToNext(exIdx) {
     if (exIdx >= exercises.length - 1) return false;
     return supersets.has(exIdx) || isSupersetRest(exercises[exIdx]?.rest);
+  }
+
+  function isStarted(exIdx) {
+    return !!sets[exIdx]?.sets.some((s) => s.done);
   }
 
   function toggleDone(exIdx, setIdx) {
@@ -484,6 +504,9 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); setFocusMode((v) => !v); }}>
                   {focusMode ? "Listläge" : "Fokusläge"}
+                </button>
+                <button type="button" role="menuitem" className="card-menu-item" disabled={!canShuffle(exerciseBlocks(exercises.length, linksToNext, isStarted))} onClick={() => { setSheet(null); shuffleExercises(); }}>
+                  Slumpa ordning
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onToggleTheme(); }}>
                   Byt tema
