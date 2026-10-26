@@ -374,6 +374,35 @@ button {
 
 .tools-logout:hover { border-color: var(--danger); }
 
+.tools-backup { display: flex; flex-direction: column; gap: 12px; }
+
+.tools-backup-hint { font-size: 0.85rem; color: var(--fg-2); }
+
+.tools-backup-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tools-backup-btn {
+  padding: 12px 8px;
+  background: var(--accent-soft);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-s);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.tools-backup-btn:hover:not(:disabled) { border-color: var(--accent); }
+.tools-backup-btn:disabled { opacity: 0.6; cursor: default; }
+
+.tools-backup-status { font-size: 0.85rem; color: var(--fg-2); }
+.tools-backup-status--error { color: var(--danger); }
+
 /* SESSION CHROME — topprad och vilotimerremsa som en sticky enhet */
 .session-chrome {
   position: sticky;

@@ -13,6 +13,8 @@ import * as db from "./lib/db";
 import { latestExerciseByKey, buildTemplateExercises } from "./lib/exerciseName";
 import { maxWeightByKey } from "./lib/pr";
 import { exportTemplateToOpenGym } from "./lib/openGymPlan";
+import { buildBackup, backupFilename, planImport } from "./lib/backup";
+import { deliverFile } from "./lib/deliverFile";
 import { useTheme } from "./hooks/useTheme";
 import { useRestTimer } from "./hooks/useRestTimer";
 import { useSwipeBack } from "./hooks/useSwipeBack";
@@ -236,6 +238,62 @@ export default function App() {
     await db.updateLogTimestamps(id, startedAt, finishedAt);
   }
 
+  function exportBackup() {
+    const backup = buildBackup({ logs, customTemplates, customExercises, customNames });
+    return deliverFile(JSON.stringify(backup, null, 2), backupFilename(), "application/json");
+  }
+
+  // Merges a parsed backup into the data: only adds what is missing. Returns
+  // the counts of the plan and what was actually written, and the error if it
+  // stopped halfway. State is updated with what was written either way, so a
+  // second run picks up where this one stopped.
+  async function importBackup(backup) {
+    const plan = planImport(backup, { logs, customTemplates, customExercises, customNames });
+    const done = { ...plan.counts, logs: 0, templates: 0, exercises: 0, names: 0 };
+    const addedLogs = [];
+    const addedTemplates = [];
+    const addedExercises = {};
+    const addedNames = {};
+    let error = null;
+
+    try {
+      for (const t of plan.templates) {
+        await db.upsertCustomTemplate(t);
+        addedTemplates.push(t);
+        done.templates++;
+      }
+      for (const [templateId, list] of Object.entries(plan.exercises)) {
+        await db.upsertCustomExercises(templateId, list);
+        addedExercises[templateId] = list;
+        done.exercises += list.length - (customExercises[templateId]?.length ?? 0);
+      }
+      for (const [exerciseId, name] of Object.entries(plan.names)) {
+        await db.upsertExerciseName(exerciseId, name);
+        addedNames[exerciseId] = name;
+        done.names++;
+      }
+      // Logs in small parallel batches; record each insert that went through
+      for (let i = 0; i < plan.logs.length; i += 10) {
+        const batch = plan.logs.slice(i, i + 10);
+        const results = await Promise.allSettled(batch.map((l) => db.insertLog(l)));
+        results.forEach((r, j) => { if (r.status === "fulfilled") addedLogs.push(batch[j]); });
+        done.logs = addedLogs.length;
+        const failed = results.find((r) => r.status === "rejected");
+        if (failed) throw failed.reason;
+      }
+    } catch (err) {
+      error = err;
+    }
+
+    if (addedTemplates.length) setCustomTemplates((prev) => [...prev, ...addedTemplates]);
+    if (Object.keys(addedExercises).length) setCustomExercises((prev) => ({ ...prev, ...addedExercises }));
+    if (Object.keys(addedNames).length) setCustomNames((prev) => ({ ...prev, ...addedNames }));
+    if (addedLogs.length) {
+      setLogs((prev) => [...prev, ...addedLogs].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)));
+    }
+    return { counts: done, error };
+  }
+
   // Last logged entry per exercise name, from any template, for prefilling a session
   function previousExercises() {
     return latestExerciseByKey(logs, customNames, templateExercises);
@@ -344,6 +402,8 @@ export default function App() {
         <Tools
           theme={theme}
           onSelectTheme={selectTheme}
+          onExportBackup={exportBackup}
+          onImportBackup={importBackup}
           onLogout={() => { localStorage.removeItem("auth"); setAuthenticated(false); }}
         />
       )}
