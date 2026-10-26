@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
 
-export default function ExerciseProgress({ logs, customNames, customExercises }) {
+export default function ExerciseProgress({ logs, customNames, templateExercises }) {
   const [selectedExercise, setSelectedExercise] = useState(null);
 
   function keyFor(ex, log) {
-    const name = resolveExerciseName(ex.exerciseId, log.templateId, customNames, customExercises);
+    const name = resolveExerciseName(ex.exerciseId, log.templateId, customNames, templateExercises);
     return { name, key: exerciseKey(name, ex.exerciseId) };
   }
 

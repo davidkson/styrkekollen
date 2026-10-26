@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IconPencil } from "./icons";
 import { resolveExerciseName, exerciseKey } from "../lib/exerciseName";
+import { maxWeight } from "../lib/pr";
 import { rirSuffix } from "../lib/rir";
 import { logsToOpenGymCsv } from "../lib/openGymExport";
 import { deliverFile } from "../lib/deliverFile";
@@ -48,18 +49,20 @@ function est1RM(sets) {
 
 // keyFor(ex, log) returns the normalized name key so the same exercise is
 // matched across templates even though its exerciseId differs per template.
+// Counts all logged sets, not only done ones: logs keep unchecked sets with
+// prefilled weights, and switching to done-only would change past PRs.
 function getPRs(log, allLogs, keyFor) {
   const olderLogs = allLogs.filter((l) => new Date(l.date) < new Date(log.date));
   const prs = {};
   for (const ex of log.exercises) {
-    const currentMax = Math.max(...ex.sets.map((s) => parseFloat(s.weight) || 0));
+    const currentMax = maxWeight(ex.sets);
     if (currentMax === 0) continue;
     const key = keyFor(ex, log);
     let prevMax = 0;
     for (const older of olderLogs) {
       for (const olderEx of older.exercises) {
         if (keyFor(olderEx, older) !== key) continue;
-        const w = Math.max(...olderEx.sets.map((s) => parseFloat(s.weight) || 0));
+        const w = maxWeight(olderEx.sets);
         if (w > prevMax) prevMax = w;
       }
     }
@@ -68,7 +71,7 @@ function getPRs(log, allLogs, keyFor) {
   return prs;
 }
 
-export default function History({ logs, customNames, customExercises, templateExercises, onDelete, onUpdateTimestamps, onProgress }) {
+export default function History({ logs, customNames, templateExercises, onDelete, onUpdateTimestamps, onProgress }) {
   const [confirmingId, setConfirmingId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editStart, setEditStart] = useState("");
@@ -97,7 +100,7 @@ export default function History({ logs, customNames, customExercises, templateEx
   }
 
   function exerciseName(templateId, exerciseId) {
-    return resolveExerciseName(exerciseId, templateId, customNames, customExercises);
+    return resolveExerciseName(exerciseId, templateId, customNames, templateExercises);
   }
 
   function keyFor(ex, log) {

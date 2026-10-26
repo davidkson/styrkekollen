@@ -1130,10 +1130,22 @@ button {
 }
 
 .set-row {
+  position: relative;
   display: grid;
   grid-template-columns: var(--set-cols);
   gap: 3px;
   align-items: center;
+}
+
+/* Live PR (#60): History's .pr-badge, pinned to the corner of the ✓ button so
+   the tight row keeps its columns. Opaque, since it sits on the green button. */
+.set-pr-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  margin-left: 0;
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface);
+  pointer-events: none;
 }
 
 .set-stepper {
