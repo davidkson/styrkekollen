@@ -914,7 +914,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
         />
       </div>
 
-      {showBuddy && <PixelBuddy event={buddyEvent} resting={resting} restDone={timer.done} />}
+      {showBuddy && <PixelBuddy event={buddyEvent} resting={resting} restDone={timer.done} behind={sheet !== null} />}
     </div>
   );
 }

@@ -3380,50 +3380,60 @@ button {
   }
 }
 
-/* PIXEL BUDDY — liten pixelgubbe ovanför flikraden under passet */
+/* PIXEL BUDDY — liten pixelgubbe som bor ovanför flikraden under passet och
+   ibland klättrar upp och hänger i toppradens underkant */
 .session--buddy {
   /* Plats så att sista innehållet kan scrollas upp ovanför gubben */
-  padding-bottom: 64px;
+  padding-bottom: 92px;
 }
 
+/* Täcker hela kolumnen mellan skärmens topp och flikraden. Släpper igenom alla
+   tryck; bara gubbens målade pixlar är klickbara. Ligger framför toppraden
+   (z-index 100) så händerna syns över kanten, men under flikraden. */
 .buddy {
   position: fixed;
+  top: 0;
   left: 50%;
   bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  height: 64px;
-  z-index: 90;
+  z-index: 120;
+  overflow: hidden;
   pointer-events: none;
+}
+
+/* Meny eller bekräftelse öppen i toppraden: lägg gubben bakom den */
+.buddy--behind {
+  z-index: 90;
 }
 
 .buddy-track {
   position: absolute;
   top: 0;
   bottom: 4px;
-  left: calc(8px + env(safe-area-inset-left));
-  right: calc(8px + env(safe-area-inset-right));
+  left: calc(4px + env(safe-area-inset-left));
+  right: calc(4px + env(safe-area-inset-right));
 }
 
 .buddy-pos {
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 48px;
-  height: 56px;
+  width: 72px;
+  height: 84px;
   will-change: transform;
 }
 
 .buddy-shadow {
   position: absolute;
-  left: 10px;
-  right: 10px;
+  left: 0;
   bottom: -1px;
-  height: 4px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.28);
+  width: 72px;
+  height: 8px;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.3), transparent);
   transform-origin: center;
+  will-change: transform;
 }
 
 .buddy-sprite {
@@ -3434,8 +3444,7 @@ button {
   margin: 0;
   border: 0;
   background: none;
-  cursor: pointer;
-  pointer-events: auto;
+  pointer-events: none;
   transform-origin: center bottom;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -3446,6 +3455,11 @@ button {
   image-rendering: pixelated;
 }
 
+.buddy-sprite rect {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 /* Ljus kant så den mörka konturen syns mot mörka teman */
 :root:not([data-theme="light"]):not([data-theme="fresh"]) .buddy-sprite svg {
   filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.35));
@@ -3453,7 +3467,6 @@ button {
 
 .buddy-burst {
   position: absolute;
-  bottom: 40px;
   width: 0;
   height: 0;
 }
@@ -3472,7 +3485,7 @@ button {
 @keyframes buddy-confetti {
   0% { transform: translate3d(0, 0, 0); opacity: 1; }
   55% { transform: translate3d(var(--dx), var(--dy), 0); opacity: 1; }
-  100% { transform: translate3d(calc(var(--dx) * 1.25), calc(var(--dy) + 46px), 0); opacity: 0; }
+  100% { transform: translate3d(calc(var(--dx) * 1.25), calc(var(--dy) + 60px), 0); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 // A 24×28 pixel grid drawn with SVG rects, scaled 2× with crisp edges. Every
 // frame is composed from body parts (head, torso, arms, legs, props) and gets
 // a 1px outline added automatically around its silhouette. The sprite faces
-// right; facing left is a CSS mirror.
+// right; facing left is a CSS mirror. Climbing frames have the wall on the
+// right, hanging frames grip an edge with the hands in the top rows.
 
 const W = 24;
 const H = 28;
-const SCALE = 2;
+const SCALE = 3;
 const SPRITE_W = W * SCALE;
+const SPRITE_H = H * SCALE;
 
 // Fixed palette, independent of the app theme
 const PALETTE = {
@@ -130,6 +132,7 @@ function armBack(g, kind, t) {
     case "up": rect(g, 7, t - 1, 2, 2, "R"); rect(g, 6, t - 3, 2, 2, "S"); rect(g, 5, t - 6, 2, 3, "S"); rect(g, 4, t - 10, 2, 4, "S"); break;
     case "straightUp": rect(g, 7, t - 1, 2, 2, "R"); rect(g, 6, t - 3, 2, 2, "S"); rect(g, 5, t - 9, 2, 7, "S"); break;
     case "point": rect(g, 7, t, 2, 2, "R"); rect(g, 5, t + 2, 3, 2, "S"); rect(g, 3, t + 4, 3, 2, "S"); break;
+    case "hang": rect(g, 7, t - 1, 2, 2, "R"); rect(g, 6, t - 3, 2, 2, "S"); rect(g, 5, 1, 2, t - 3, "S"); break;
     default: rect(g, 7, t, 2, 2, "R"); rect(g, 7, t + 2, 2, 4, "S");
   }
 }
@@ -146,6 +149,14 @@ function armFront(g, kind, t) {
     case "forward": rect(g, 15, t, 2, 2, "r"); rect(g, 17, t, 4, 2, "s"); break;
     case "chest": rect(g, 15, t, 2, 1, "r"); rect(g, 15, t + 1, 2, 2, "s"); rect(g, 17, t - 1, 2, 3, "s"); break;
     case "point": rect(g, 15, t - 1, 2, 2, "r"); rect(g, 17, t - 2, 3, 2, "s"); rect(g, 19, t - 4, 3, 2, "s"); break;
+    case "hang": rect(g, 15, t - 1, 2, 2, "r"); rect(g, 16, t - 3, 2, 2, "s"); rect(g, 17, 1, 2, t - 3, "s"); break;
+    case "hangReach":
+      rect(g, 15, t - 1, 2, 2, "r"); rect(g, 16, t - 3, 2, 2, "s"); rect(g, 17, 5, 2, t - 7, "s");
+      rect(g, 18, 3, 2, 3, "s"); rect(g, 19, 1, 2, 3, "s");
+      break;
+    case "drink1": drinkArm(g, t, 0); break;
+    case "drink2": drinkArm(g, t, 1); break;
+    case "bottle": rect(g, 15, t, 2, 2, "r"); rect(g, 15, t + 2, 2, 3, "s"); bottle(g, 15, t + 5); break;
     default: rect(g, 15, t, 2, 2, "r"); rect(g, 15, t + 2, 2, 4, "s");
   }
 }
@@ -160,6 +171,17 @@ function bottle(g, x, y) {
   rect(g, x, y, 2, 1, "w");
   rect(g, x, y + 1, 2, 3, "c");
   rect(g, x + 1, y + 1, 1, 3, "C");
+}
+
+// Bottle tipped up to the mouth; offsets are relative to the torso top
+function drinkArm(g, t, lift) {
+  rect(g, 15, t, 2, 2, "r");
+  rect(g, 16, t - 2, 2, 2, "s");
+  rect(g, 15, t - 4, 1, 1, "w"); // cap at the mouth
+  rect(g, 16, t - 5 - lift, 2, 2, "c");
+  rect(g, 18, t - 7 - lift * 2, 2, 3, "c");
+  rect(g, 19, t - 7 - lift * 2, 1, 3, "C");
+  rect(g, 17, t - 4, 2, 2, "s"); // hand on the bottle
 }
 
 function standing({ bob = 0, legKind = "stand", armB = "down", armF = "down", face, prop }) {
@@ -207,17 +229,47 @@ function sitting({ arm = "bottle", face } = {}) {
       rect(g, 15, t + 2, 2, 2, "s");
       rect(g, 17, t + 2, 2, 2, "s");
     } else if (arm === "drink1" || arm === "drink2") {
-      const lift = arm === "drink2" ? 1 : 0;
-      rect(g, 15, t, 2, 2, "r");
-      rect(g, 16, t - 2, 2, 2, "s");
-      rect(g, 15, 14, 1, 1, "w"); // cap at the mouth
-      rect(g, 16, 13 - lift, 2, 2, "c");
-      rect(g, 18, 11 - lift * 2, 2, 3, "c");
-      rect(g, 19, 11 - lift * 2, 1, 3, "C");
-      rect(g, 17, 14, 2, 2, "s"); // hand on the bottle
+      drinkArm(g, t, arm === "drink2" ? 1 : 0);
     } else {
       bottle(g, 3, 23); // put down behind him
       armFront(g, arm, t);
+    }
+  };
+}
+
+// Side view against a wall on the right, hand over hand
+function climbing(phase) {
+  return (g) => {
+    const t = 14;
+    if (phase === 0) {
+      rect(g, 13, t - 1, 2, 2, "R");
+      rect(g, 15, t - 4, 2, 4, "S"); // far hand low on the wall
+      rect(g, 9, 22, 2, 3, "S"); // far leg hanging
+      shoe(g, 9);
+    } else {
+      rect(g, 13, t - 1, 2, 2, "R");
+      rect(g, 16, t - 12, 2, 9, "S"); // far hand reaching high
+      rect(g, 11, 21, 4, 2, "S"); // far knee up
+      rect(g, 15, 22, 2, 2, "S");
+      rect(g, 15, 24, 3, 1, "k");
+      rect(g, 15, 25, 3, 1, "K");
+    }
+    shorts(g, 20);
+    torso(g, t);
+    head(g, 8, 5, { eyes: phase === 0 ? "open" : "blink", tail: phase });
+    if (phase === 0) {
+      rect(g, 15, t - 1, 2, 2, "r");
+      rect(g, 16, t - 3, 2, 2, "s");
+      rect(g, 17, 2, 2, t - 4, "s"); // near hand reaching high
+      rect(g, 13, 21, 3, 2, "s"); // near knee up
+      rect(g, 16, 22, 2, 2, "s");
+      rect(g, 16, 24, 3, 1, "k");
+      rect(g, 16, 25, 3, 1, "K");
+    } else {
+      rect(g, 15, t, 2, 2, "r");
+      rect(g, 17, t - 2, 2, 4, "s"); // near hand low
+      rect(g, 13, 22, 2, 3, "s"); // near leg hanging
+      shoe(g, 13);
     }
   };
 }
@@ -276,6 +328,22 @@ const FRAME_DEFS = {
   drink2: sitting({ arm: "drink2", face: { eyes: "happy", mouth: "none" } }),
   sitWaveA: sitting({ arm: "waveA", face: { eyes: "open", mouth: "smile" } }),
   sitWaveB: sitting({ arm: "waveB", face: { eyes: "happy", mouth: "smile" } }),
+  climb1: climbing(0),
+  climb2: climbing(1),
+  fall: standing({ legKind: "walkA", armB: "up", armF: "up", face: { eyes: "open", mouth: "open", tail: 2 } }),
+  hang: standing({ armB: "hang", armF: "hang" }),
+  hangBlink: standing({ armB: "hang", armF: "hang", face: { eyes: "blink" } }),
+  hangSwingA: standing({ legKind: "walkA", armB: "hang", armF: "hang", face: { mouth: "smile", tail: 1 } }),
+  hangSwingB: standing({ legKind: "walkB", armB: "hang", armF: "hang", face: { mouth: "smile", tail: 0 } }),
+  hangReach: standing({ legKind: "walkA", armB: "hang", armF: "hangReach", face: { tail: 1 } }),
+  hangCheerA: standing({ legKind: "walkA", armB: "hang", armF: "up", face: { ...HAPPY, tail: 1 } }),
+  hangCheerB: standing({ legKind: "walkB", armB: "hang", armF: "up", face: { ...HAPPY, tail: 2 } }),
+  hangWaveA: standing({ armB: "hang", armF: "waveA", face: { mouth: "smile" } }),
+  hangWaveB: standing({ armB: "hang", armF: "waveB", face: { eyes: "happy", mouth: "smile" } }),
+  hangHold: standing({ armB: "hang", armF: "bottle" }),
+  hangHoldBlink: standing({ armB: "hang", armF: "bottle", face: { eyes: "blink" } }),
+  hangDrink1: standing({ armB: "hang", armF: "drink1", face: { eyes: "happy", mouth: "none" } }),
+  hangDrink2: standing({ legKind: "walkA", armB: "hang", armF: "drink2", face: { eyes: "happy", mouth: "none" } }),
 };
 
 const frameCache = new Map();
@@ -338,6 +406,13 @@ const IDLE_SCRIPTS = {
   ],
 };
 
+// Hanging from the bottom edge of the top bar
+const TOP_SCRIPTS = {
+  swing: () => [...repeat(randInt(2, 4), [["hangSwingA", 260], ["hang", 200], ["hangSwingB", 260], ["hang", 200]]), ["hang", rand(300, 900)]],
+  pause: () => [["hang", rand(800, 2200)], ["hangBlink", 130], ["hang", rand(600, 1600)]],
+  look: () => [["hang", 500], ["hangBlink", 120], ["hang", rand(700, 1400), 0, true], ["hang", rand(500, 1000), 0, true]],
+};
+
 const REACTIONS = {
   set: () => pick([
     [["crouch", 90], ...hop("fist", 4), ["fist", 350], ["stand", 150]],
@@ -369,6 +444,27 @@ const REACTIONS = {
   ]),
 };
 
+const kick = (n, ms = 150) => repeat(n, [["hangCheerA", ms], ["hangCheerB", ms]]);
+
+const TOP_REACTIONS = {
+  set: () => [...kick(3), ["hang", 200]],
+  pr: (burst) => [
+    burst, ...kick(4),
+    ...repeat(2, [["hangWaveA", 170], ["hangWaveB", 170]]),
+    burst, ...kick(3, 130), ["hangSwingA", 260], ["hang", 300],
+  ],
+  session: (burst) => [
+    burst, ...kick(4),
+    ...repeat(2, [["hangWaveA", 170], ["hangWaveB", 170]]),
+    burst, ...kick(5, 130),
+    burst, ...repeat(2, [["hangSwingA", 260], ["hangSwingB", 260]]), ["hang", 400],
+  ],
+  tap: () => pick([
+    [...repeat(3, [["hangWaveA", 170], ["hangWaveB", 170]]), ["hang", 200]],
+    [...kick(3, 130), ["hang", 200]],
+  ]),
+};
+
 // Reduced motion: a pose change and nothing else
 const REDUCED_REACTIONS = {
   set: () => [["fist", 900], ["stand", 100]],
@@ -378,19 +474,28 @@ const REDUCED_REACTIONS = {
 };
 
 const WALK_FRAMES = ["walk1", "walk2", "walk3", "walk4"];
-const WALK_SPEED = 26; // px per second
+const CLIMB_FRAMES = ["climb1", "climb2"];
+const SHIMMY_FRAMES = ["hangReach", "hang"];
+const WALK_SPEED = 34; // px per second
+const CLIMB_SPEED = 60;
+const SHIMMY_SPEED = 26;
+const GRAVITY = 2600; // px/s²
+const GRIP_PX = 5; // how far the hands reach above the top bar's bottom edge
+const CLIMB_OUT = 18; // how far past the walking range the climbing wall is
+const MIN_CLIMB = 120; // don't bother travelling up a shorter distance
 const PRIORITY = { tap: 0, set: 1, pr: 2, session: 3 };
+const CHROME_SELECTOR = ".session-chrome";
 
 function makePieces() {
   return Array.from({ length: 18 }, (_, i) => {
     const angle = (-Math.PI / 2) + rand(-1.15, 1.15);
-    const dist = rand(30, 70);
+    const dist = rand(40, 95);
     return {
       id: i,
       dx: Math.round(Math.cos(angle) * dist),
       dy: Math.round(Math.sin(angle) * dist),
       color: pick(CONFETTI),
-      size: Math.random() < 0.3 ? 6 : 4,
+      size: Math.random() < 0.3 ? 9 : 6,
       dur: Math.round(rand(850, 1300)),
       delay: Math.round(rand(0, 120)),
     };
@@ -403,7 +508,7 @@ function prefersReducedMotion() {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function PixelBuddy({ event, resting = false, restDone = false }) {
+export default function PixelBuddy({ event, resting = false, restDone = false, behind = false }) {
   const [frame, setFrame] = useState("stand");
   const [bursts, setBursts] = useState([]);
   const trackRef = useRef(null);
@@ -423,27 +528,50 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
   useEffect(() => {
     let timer = null;
     let raf = 0;
+    // x: px from the track's left edge; y: px from the ground (track bottom) up
     let x = null;
+    let y = 0;
     let facing = 1;
     let jump = 0;
-    let mode = "idle"; // idle | react | rest | sleep
+    // idle | react | rest | travel (climbing/jumping/falling, not interruptible) | sleep
+    let mode = "idle";
+    let place = "ground"; // ground | top
     let priority = -1;
+    let pending = null; // reaction waiting for a climb/jump/fall to finish
+    let leaveAt = 0; // when to come down from the top bar
     let reduced = prefersReducedMotion();
     const burstTimers = new Set();
 
     const maxX = () => Math.max(0, (trackRef.current?.clientWidth ?? SPRITE_W) - SPRITE_W);
+    const clampX = (v) => Math.max(0, Math.min(maxX(), v));
+
+    // Height (y) at which the hands grip the bottom edge of the top bar. The
+    // bar changes height (rest strip, safe area), so this is always measured.
+    function topY() {
+      const chrome = document.querySelector(CHROME_SELECTOR);
+      const track = trackRef.current;
+      if (!chrome || !track) return null;
+      const ground = track.getBoundingClientRect().bottom;
+      const edge = chrome.getBoundingClientRect().bottom;
+      return Math.round(ground - edge + GRIP_PX - SPRITE_H);
+    }
 
     function apply() {
-      if (x === null) x = Math.round(maxX() * rand(0.15, 0.85));
-      x = Math.min(x, maxX());
-      if (posRef.current) posRef.current.style.transform = `translate3d(${Math.round(x)}px, 0, 0)`;
+      const max = maxX();
+      if (x === null) x = Math.round(max * rand(0.15, 0.85));
+      x = Math.max(-CLIMB_OUT, Math.min(max + CLIMB_OUT, x));
+      if (place === "top" && mode !== "travel") {
+        const ty = topY();
+        if (ty !== null) y = ty;
+      }
+      if (posRef.current) posRef.current.style.transform = `translate3d(${Math.round(x)}px, ${-Math.round(y)}px, 0)`;
       if (spriteRef.current) {
         spriteRef.current.style.transform = `translate3d(0, ${-jump * SCALE}px, 0)${facing < 0 ? " scaleX(-1)" : ""}`;
       }
       if (shadowRef.current) {
-        const s = 1 - jump * 0.07;
-        shadowRef.current.style.transform = `scale(${s})`;
-        shadowRef.current.style.opacity = String(Math.max(0.35, s));
+        const s = Math.max(0, 1 - (y + jump * SCALE) / 140);
+        shadowRef.current.style.transform = `translate3d(${Math.round(x)}px, 0, 0) scale(${s.toFixed(2)})`;
+        shadowRef.current.style.opacity = s.toFixed(2);
       }
     }
 
@@ -474,10 +602,75 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
       step();
     }
 
+    // Straight-line move towards a (possibly moving) target, cycling frames
+    function move(target, speed, frames, frameMs, done) {
+      let fi = 0;
+      const nextFrame = () => {
+        setFrame(frames[fi++ % frames.length]);
+        timer = setTimeout(nextFrame, frameMs);
+      };
+      nextFrame();
+      let last = performance.now();
+      const tick = (now) => {
+        const dt = Math.min(64, now - last) / 1000;
+        last = now;
+        const t = target();
+        const dx = t.x - x;
+        const dy = t.y - y;
+        const dist = Math.hypot(dx, dy);
+        const stepLen = speed * dt;
+        if (dist <= stepLen) {
+          x = t.x;
+          y = t.y;
+          stop();
+          apply();
+          done();
+          return;
+        }
+        x += (dx / dist) * stepLen;
+        y += (dy / dist) * stepLen;
+        apply();
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }
+
+    // Ballistic flight: up until the apex (grabbing the top bar), or down to the ground
+    function fly(v0, frameName, toTop, done) {
+      const y0 = y;
+      const t0 = performance.now();
+      setFrame(frameName);
+      const tick = (now) => {
+        const t = (now - t0) / 1000;
+        const vy = v0 - GRAVITY * t;
+        const ny = y0 + v0 * t - (GRAVITY * t * t) / 2;
+        if (toTop && vy <= 0) {
+          y = topY() ?? ny;
+          raf = 0;
+          apply();
+          done();
+          return;
+        }
+        if (!toTop && vy < 0 && ny <= 0) {
+          y = 0;
+          raf = 0;
+          apply();
+          done();
+          return;
+        }
+        y = ny;
+        apply();
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }
+
     function burst() {
       if (reduced) return;
       const id = Math.random().toString(36).slice(2);
-      setBursts((prev) => [...prev, { id, x: Math.round((x ?? 0) + SPRITE_W / 2), pieces: makePieces() }]);
+      const bx = Math.round((x ?? 0) + SPRITE_W / 2);
+      const by = Math.round(y + SPRITE_H * 0.55);
+      setBursts((prev) => [...prev, { id, x: bx, y: by, pieces: makePieces() }]);
       const t = setTimeout(() => {
         burstTimers.delete(t);
         setBursts((prev) => prev.filter((b) => b.id !== id));
@@ -485,36 +678,24 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
       burstTimers.add(t);
     }
 
+    function walkTo(target, done) {
+      facing = target > x ? 1 : -1;
+      move(() => ({ x: target, y: 0 }), WALK_SPEED, WALK_FRAMES, 150, done);
+    }
+
     function walk() {
       const max = maxX();
       let target = Math.round(rand(0, max));
       if (Math.abs(target - x) < 40) target = x < max / 2 ? Math.round(rand(x + 40, max)) : Math.round(rand(0, x - 40));
-      target = Math.max(0, Math.min(max, target));
+      target = clampX(target);
       if (Math.abs(target - x) < 8) return play(pauseScript(), idle);
-      facing = target > x ? 1 : -1;
+      walkTo(target, () => play([["stand", 200]], idle));
+    }
 
-      let fi = 0;
-      const nextFrame = () => {
-        setFrame(WALK_FRAMES[fi++ % WALK_FRAMES.length]);
-        timer = setTimeout(nextFrame, 150);
-      };
-      nextFrame();
-
-      let last = performance.now();
-      const tick = (now) => {
-        const dt = Math.min(64, now - last);
-        last = now;
-        x += facing * WALK_SPEED * dt / 1000;
-        if ((facing > 0 && x >= target) || (facing < 0 && x <= target)) {
-          x = target;
-          stop();
-          play([["stand", 200]], idle);
-          return;
-        }
-        apply();
-        raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
+    function canTravel() {
+      if (reduced) return false;
+      const ty = topY();
+      return ty !== null && ty >= MIN_CLIMB;
     }
 
     function idle() {
@@ -523,23 +704,152 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
       if (ctx.current.resting) return sitDown();
       if (reduced) return play(pauseScript(), idle);
       const roll = Math.random();
-      if (roll < 0.42) walk();
-      else if (roll < 0.66) play(pauseScript(), idle);
-      else if (roll < 0.75) play(IDLE_SCRIPTS.look(), idle);
-      else if (roll < 0.84) play(IDLE_SCRIPTS.stretch(), idle);
+      if (roll < 0.08 && canTravel()) goUp();
+      else if (roll < 0.46) walk();
+      else if (roll < 0.68) play(pauseScript(), idle);
+      else if (roll < 0.77) play(IDLE_SCRIPTS.look(), idle);
+      else if (roll < 0.85) play(IDLE_SCRIPTS.stretch(), idle);
       else if (roll < 0.93) play(IDLE_SCRIPTS.squats(), idle);
       else play(IDLE_SCRIPTS.pushups(), idle);
     }
 
+    // ── Travelling to and from the top bar ──
+
+    function goUp() {
+      const ty = topY();
+      if (ty < 330 && Math.random() < 0.5) {
+        // Close enough for one big jump
+        play([["crouch", 280]], () => {
+          mode = "travel";
+          place = "top";
+          fly(Math.sqrt(2 * GRAVITY * Math.max(0, ty - y)), "reach", true, () => arriveTop(false));
+        });
+        return;
+      }
+      const left = x < maxX() / 2;
+      const edgeX = left ? 0 : maxX();
+      const wallX = left ? -CLIMB_OUT : maxX() + CLIMB_OUT;
+      walkTo(edgeX, () => {
+        mode = "travel";
+        place = "top";
+        facing = left ? -1 : 1;
+        // Step onto the wall, then climb hand over hand
+        move(() => ({ x: wallX, y: 6 }), 40, ["climb1"], 400, () => {
+          move(() => ({ x: wallX, y: topY() ?? y }), CLIMB_SPEED, CLIMB_FRAMES, 220, () => arriveTop(true));
+        });
+      });
+    }
+
+    function arriveTop(fromWall) {
+      leaveAt = performance.now() + rand(10000, 30000);
+      play([["hang", 350], ["hangBlink", 120], ["hang", 250]], () => {
+        mode = "idle";
+        if (!fromWall) return settle();
+        // Shimmy away from the wall along the edge; just clear of it if
+        // something is waiting (a rest or a reaction)
+        const max = maxX();
+        const hurry = pending || ctx.current.resting;
+        const tx = x < 0
+          ? (hurry ? 12 : rand(max * 0.2, max * 0.6))
+          : (hurry ? max - 12 : rand(max * 0.4, max * 0.8));
+        shimmyTo(Math.round(clampX(tx)), settle);
+      });
+    }
+
+    function shimmyTo(tx, done) {
+      facing = tx > x ? 1 : -1;
+      move(() => ({ x: tx, y: topY() ?? y }), SHIMMY_SPEED, SHIMMY_FRAMES, 280, done);
+    }
+
+    function topIdle() {
+      mode = "idle";
+      priority = -1;
+      if (reduced || topY() === null) return snapToGround(idle);
+      if (ctx.current.resting) return sitDown();
+      if (performance.now() > leaveAt) return goDown();
+      const roll = Math.random();
+      if (roll < 0.4) play(TOP_SCRIPTS.swing(), topIdle);
+      else if (roll < 0.62) play(TOP_SCRIPTS.pause(), topIdle);
+      else if (roll < 0.8) play(TOP_SCRIPTS.look(), topIdle);
+      else {
+        const max = maxX();
+        let tx = Math.round(rand(0, max));
+        if (Math.abs(tx - x) < 40) tx = clampX(x < max / 2 ? x + 60 : x - 60);
+        shimmyTo(tx, topIdle);
+      }
+    }
+
+    function goDown() {
+      if (Math.random() < 0.6) {
+        // Let go and drop
+        play([["hangBlink", 200], ["hang", 250]], () => {
+          mode = "travel";
+          place = "ground";
+          fly(0, "fall", false, land);
+        });
+        return;
+      }
+      const left = x < maxX() / 2;
+      const wallX = left ? -CLIMB_OUT : maxX() + CLIMB_OUT;
+      shimmyTo(wallX, () => {
+        mode = "travel";
+        place = "ground";
+        facing = left ? -1 : 1;
+        move(() => ({ x: wallX, y: 0 }), CLIMB_SPEED, CLIMB_FRAMES, 220, land);
+      });
+    }
+
+    // Landing squash, then step back into the walking range if needed
+    function land() {
+      play([["crouch", 180], ["smile", 250]], () => {
+        const tx = clampX(x);
+        if (tx !== x) walkTo(tx, settle);
+        else settle();
+      });
+    }
+
+    function snapToGround(next) {
+      stop();
+      place = "ground";
+      y = 0;
+      x = clampX(x ?? 0);
+      apply();
+      next?.();
+    }
+
+    // A climb/jump/fall or arrival is done: catch up on what happened meanwhile
+    function settle() {
+      mode = "idle";
+      priority = -1;
+      if (pending) {
+        const type = pending;
+        pending = null;
+        return react(type);
+      }
+      after();
+    }
+
+    function after() {
+      if (ctx.current.resting) sitDown();
+      else if (place === "top") topIdle();
+      else idle();
+    }
+
+    // ── Rest ──
+
     function restLoop() {
-      const steps = [["sit", rand(1200, 3200)]];
+      const top = place === "top";
+      const steps = [[top ? "hangHold" : "sit", rand(1200, 3200)]];
       const roll = Math.random();
       if (roll < 0.4) {
-        steps.push(["drink1", 450], ["drink2", 280], ["drink1", 280], ["drink2", 280], ["drink1", 350], ["sitBlink", 120]);
+        steps.push(...(top
+          ? [["hangDrink1", 450], ["hangDrink2", 280], ["hangDrink1", 280], ["hangDrink2", 280], ["hangDrink1", 350], ["hangHoldBlink", 120]]
+          : [["drink1", 450], ["drink2", 280], ["drink1", 280], ["drink2", 280], ["drink1", 350], ["sitBlink", 120]]));
       } else if (roll < 0.85) {
-        steps.push(["sitBlink", 130]);
+        steps.push([top ? "hangHoldBlink" : "sitBlink", 130]);
       } else {
-        steps.push(["sit", 200, 0, true], ["sitBlink", 120], ["sit", rand(600, 1200), 0, true]);
+        const f = top ? "hangHold" : "sit";
+        steps.push([f, 200, 0, true], [top ? "hangHoldBlink" : "sitBlink", 120], [f, rand(600, 1200), 0, true]);
       }
       play(steps, restLoop);
     }
@@ -547,36 +857,39 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
     function sitDown() {
       mode = "rest";
       priority = -1;
+      if (place === "top") return restLoop();
+      x = clampX(x);
       play(reduced ? [] : [["crouch", 180]], restLoop);
-    }
-
-    function after() {
-      if (ctx.current.resting) sitDown();
-      else idle();
     }
 
     function react(type) {
       if (mode === "sleep") return;
+      if (mode === "travel") {
+        if (!pending || PRIORITY[type] > PRIORITY[pending]) pending = type;
+        return;
+      }
       if (mode === "react" && PRIORITY[type] < priority) return;
       stop();
+      if (reduced && place === "top") snapToGround();
       mode = "react";
       priority = PRIORITY[type];
-      const script = reduced ? REDUCED_REACTIONS[type]() : REACTIONS[type](burst);
-      play(script, after);
+      const table = reduced ? REDUCED_REACTIONS : place === "top" ? TOP_REACTIONS : REACTIONS;
+      play(table[type](burst), after);
     }
 
     function tap() {
-      if (mode === "sleep" || mode === "react") return;
+      if (mode === "sleep" || mode === "react" || mode === "travel") return;
       if (mode === "rest") {
         stop();
-        const wave = reduced ? [["sitWaveA", 900]] : [...repeat(3, [["sitWaveA", 170], ["sitWaveB", 170]])];
-        return play(wave, after);
+        const [a, b] = place === "top" ? ["hangWaveA", "hangWaveB"] : ["sitWaveA", "sitWaveB"];
+        return play(reduced ? [[a, 900]] : repeat(3, [[a, 170], [b, 170]]), after);
       }
       react("tap");
     }
 
     function restChanged(on, done) {
-      if (mode === "sleep" || mode === "react") return; // after() picks it up
+      // While reacting or travelling, after()/settle() picks up the new state
+      if (mode === "sleep" || mode === "react" || mode === "travel") return;
       if (on && mode !== "rest") {
         stop();
         sitDown();
@@ -584,22 +897,26 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
         stop();
         mode = "react";
         priority = 1;
-        const up = done
-          ? (reduced ? [["fist", 900]] : [["crouch", 120], ...hop("cheer", 6), ["fist", 450], ["stand", 150]])
-          : (reduced ? [] : [["crouch", 160], ["stand", 150]]);
-        play(up, idle);
+        let up;
+        if (place === "top") up = done && !reduced ? [...kick(3), ["hang", 200]] : [["hang", 200]];
+        else if (done) up = reduced ? [["fist", 900]] : [["crouch", 120], ...hop("cheer", 6), ["fist", 450], ["stand", 150]];
+        else up = reduced ? [] : [["crouch", 160], ["stand", 150]];
+        play(up, after);
       }
     }
 
+    // Coming back from a hidden tab: finish any travel instantly, then carry on
     function resume() {
-      mode = "idle";
       jump = 0;
-      if (ctx.current.resting) {
-        mode = "rest";
-        restLoop();
-      } else {
-        idle();
+      if (place === "top" && (reduced || topY() === null)) place = "ground";
+      if (place === "ground") {
+        y = 0;
+        x = clampX(x ?? 0);
       }
+      if (place === "top" && leaveAt < performance.now()) leaveAt = performance.now() + rand(5000, 15000);
+      mode = "idle";
+      apply();
+      settle();
     }
 
     function onVisibility() {
@@ -611,11 +928,19 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
       }
     }
 
+    function onLayout() {
+      if (mode !== "travel") apply();
+    }
+
     const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     const onMotion = () => { reduced = mq.matches; };
     mq?.addEventListener?.("change", onMotion);
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("resize", apply);
+    window.addEventListener("resize", onLayout);
+    window.addEventListener("scroll", onLayout, { passive: true });
+    const chrome = document.querySelector(CHROME_SELECTOR);
+    const ro = chrome && typeof ResizeObserver !== "undefined" ? new ResizeObserver(onLayout) : null;
+    ro?.observe(chrome);
 
     ctrlRef.current = { react, tap, restChanged };
     apply();
@@ -626,9 +951,11 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
     return () => {
       stop();
       burstTimers.forEach(clearTimeout);
+      ro?.disconnect();
       mq?.removeEventListener?.("change", onMotion);
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("resize", apply);
+      window.removeEventListener("resize", onLayout);
+      window.removeEventListener("scroll", onLayout);
       ctrlRef.current = null;
     };
   }, []);
@@ -646,10 +973,10 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
   const rects = frameRects(frame);
 
   return (
-    <div className="buddy" aria-hidden="true">
+    <div className={`buddy${behind ? " buddy--behind" : ""}`} aria-hidden="true">
       <div className="buddy-track" ref={trackRef}>
+        <span className="buddy-shadow" ref={shadowRef} />
         <div className="buddy-pos" ref={posRef}>
-          <span className="buddy-shadow" ref={shadowRef} />
           <button
             type="button"
             className="buddy-sprite"
@@ -659,8 +986,8 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
           >
             <svg
               viewBox={`0 0 ${W} ${H}`}
-              width={W * SCALE}
-              height={H * SCALE}
+              width={SPRITE_W}
+              height={SPRITE_H}
               shapeRendering="crispEdges"
             >
               {rects.map(([rx, ry, rw, c], i) => (
@@ -670,7 +997,7 @@ export default function PixelBuddy({ event, resting = false, restDone = false })
           </button>
         </div>
         {bursts.map((b) => (
-          <div key={b.id} className="buddy-burst" style={{ left: b.x }}>
+          <div key={b.id} className="buddy-burst" style={{ left: b.x, bottom: b.y }}>
             {b.pieces.map((p) => (
               <span
                 key={p.id}
