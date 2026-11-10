@@ -97,6 +97,9 @@ export function useRestTimer() {
       const nextEnd = Math.max(now + MIN_SECONDS * 1000, endAt + delta * 1000);
       setEndAt(nextEnd);
       setRemaining(secondsLeft(nextEnd));
+    } else if (!done && remaining !== preset) {
+      // Paused mid-rest: change only the time left so resume continues from it.
+      setRemaining(Math.max(MIN_SECONDS, remaining + delta));
     } else {
       const next = Math.max(MIN_SECONDS, preset + delta);
       setPreset(next);
