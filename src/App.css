@@ -3379,3 +3379,102 @@ button {
     background: rgba(20, 20, 40, 0.92);
   }
 }
+
+/* PIXEL BUDDY — liten pixelgubbe ovanför flikraden under passet */
+.session--buddy {
+  /* Plats så att sista innehållet kan scrollas upp ovanför gubben */
+  padding-bottom: 64px;
+}
+
+.buddy {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 64px;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.buddy-track {
+  position: absolute;
+  top: 0;
+  bottom: 4px;
+  left: calc(8px + env(safe-area-inset-left));
+  right: calc(8px + env(safe-area-inset-right));
+}
+
+.buddy-pos {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 48px;
+  height: 56px;
+  will-change: transform;
+}
+
+.buddy-shadow {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.28);
+  transform-origin: center;
+}
+
+.buddy-sprite {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  transform-origin: center bottom;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.buddy-sprite svg {
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* Ljus kant så den mörka konturen syns mot mörka teman */
+:root:not([data-theme="light"]):not([data-theme="fresh"]) .buddy-sprite svg {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.35));
+}
+
+.buddy-burst {
+  position: absolute;
+  bottom: 40px;
+  width: 0;
+  height: 0;
+}
+
+.buddy-confetti {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--size);
+  height: var(--size);
+  background: var(--c);
+  opacity: 0;
+  animation: buddy-confetti var(--dur) cubic-bezier(0.2, 0.7, 0.4, 1) var(--delay) forwards;
+}
+
+@keyframes buddy-confetti {
+  0% { transform: translate3d(0, 0, 0); opacity: 1; }
+  55% { transform: translate3d(var(--dx), var(--dy), 0); opacity: 1; }
+  100% { transform: translate3d(calc(var(--dx) * 1.25), calc(var(--dy) + 46px), 0); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buddy-confetti { display: none; }
+}

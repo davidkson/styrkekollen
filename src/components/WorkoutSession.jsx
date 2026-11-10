@@ -9,6 +9,8 @@ import { exerciseBlocks, canShuffle, shuffleOrder, remapSupersets, restoreOrder 
 import { fmt } from "../hooks/useRestTimer";
 import { useWakeLock } from "../hooks/useWakeLock";
 import { IconPencil } from "./icons";
+import PixelBuddy from "./PixelBuddy";
+import { readBuddyPref, writeBuddyPref } from "../lib/buddyPref";
 
 const EMPTY_FORM = { name: "", sets: "3", repsRange: "8–12", rest: "60 sek", bodyweight: false };
 const REST_PRESETS = [30, 45, 60, 90, 120, 180];
@@ -183,6 +185,9 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
   const [formError, setFormError] = useState("");
   const [supersets, setSupersets] = useState(new Set());
   const [suggestIdx, setSuggestIdx] = useState(null);
+  const [showBuddy, setShowBuddy] = useState(readBuddyPref);
+  // Latest set-completion event for the pixel buddy: { type: "set" | "pr" | "session", id }
+  const [buddyEvent, setBuddyEvent] = useState(null);
 
   // Keep the screen on between sets while the session view is shown
   useWakeLock();
@@ -417,6 +422,8 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
     });
     if (becomingDone) {
       haptic(isPR ? [40, 60, 120] : 40);
+      const type = sessionDoneAfter ? "session" : isPR ? "pr" : "set";
+      setBuddyEvent((prev) => ({ type, id: (prev?.id ?? 0) + 1 }));
       // Rest with the exercise's own time; unknown format keeps the selected preset
       if (!sessionDoneAfter && !linksToNext(exIdx)) {
         timer.autoStart(parseRestSec(exercises[exIdx]?.rest) ?? timer.preset);
@@ -463,9 +470,18 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
       .reduce((s2, s) => s2 + parseFloat(s.weight) * parseInt(s.reps), 0), 0);
 
   const restVisible = timer.running || timer.done || restOpen;
+  // A paused mid-rest timer still counts as resting for the buddy
+  const resting = timer.running || (!timer.done && timer.remaining !== timer.preset);
+
+  function toggleBuddy() {
+    setSheet(null);
+    const next = !showBuddy;
+    setShowBuddy(next);
+    writeBuddyPref(next);
+  }
 
   return (
-    <div className="session">
+    <div className={`session${showBuddy ? " session--buddy" : ""}`}>
       <div className="session-chrome">
         <div className="session-topbar">
           <button
@@ -510,6 +526,9 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onToggleTheme(); }}>
                   Byt tema
+                </button>
+                <button type="button" role="menuitem" className="card-menu-item" onClick={toggleBuddy}>
+                  {showBuddy ? "Göm gubben" : "Visa gubben"}
                 </button>
                 <button type="button" role="menuitem" className="card-menu-item" onClick={() => { setSheet(null); onCancel(); }}>
                   Pausa passet
@@ -895,6 +914,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
         />
       </div>
 
+      {showBuddy && <PixelBuddy event={buddyEvent} resting={resting} restDone={timer.done} />}
     </div>
   );
 }
