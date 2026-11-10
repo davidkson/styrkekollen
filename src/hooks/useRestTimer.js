@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 function beep() {
   navigator.vibrate?.([100, 60, 100, 60, 200]);
@@ -26,70 +26,105 @@ export function fmt(s) {
   return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
+const TICK_MS = 250;
+const MIN_SECONDS = 5;
+
+function secondsLeft(endAt) {
+  return Math.ceil((endAt - Date.now()) / 1000);
+}
+
 export function useRestTimer() {
   const [preset, setPreset] = useState(90);
   const [remaining, setRemaining] = useState(90);
-  const [running, setRunning] = useState(false);
+  // Wall-clock deadline (ms) while running; null when paused/idle/done.
+  const [endAt, setEndAt] = useState(null);
   const [done, setDone] = useState(false);
-  const intervalRef = useRef(null);
+  const running = endAt !== null;
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => {
-        setRemaining((r) => {
-          if (r <= 1) {
-            clearInterval(intervalRef.current);
-            setRunning(false);
-            setDone(true);
-            beep();
-            return 0;
-          }
-          return r - 1;
-        });
-      }, 1000);
+    if (endAt === null) return;
+    // Guards against finishing twice (interval + visibility event firing
+    // before the state update that clears endAt has been committed).
+    let finished = false;
+
+    function sync() {
+      if (finished) return;
+      const left = secondsLeft(endAt);
+      if (left <= 0) {
+        finished = true;
+        setEndAt(null);
+        setRemaining(0);
+        setDone(true);
+        beep();
+      } else {
+        setRemaining(left);
+      }
     }
-    return () => clearInterval(intervalRef.current);
-  }, [running]);
+
+    function onVisibility() {
+      if (document.visibilityState === "visible") sync();
+    }
+
+    sync();
+    const id = setInterval(sync, TICK_MS);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", sync);
+    window.addEventListener("pageshow", sync);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", sync);
+      window.removeEventListener("pageshow", sync);
+    };
+  }, [endAt]);
+
+  function start(seconds) {
+    setRemaining(seconds);
+    setDone(false);
+    setEndAt(Date.now() + seconds * 1000);
+  }
 
   function selectPreset(s) {
     setPreset(s);
     setRemaining(s);
-    setRunning(false);
+    setEndAt(null);
     setDone(false);
   }
 
   function adjust(delta) {
-    const next = Math.max(5, (running ? remaining : preset) + delta);
-    if (running) setRemaining(next);
-    else { setPreset(next); setRemaining(next); }
+    if (running) {
+      const now = Date.now();
+      const nextEnd = Math.max(now + MIN_SECONDS * 1000, endAt + delta * 1000);
+      setEndAt(nextEnd);
+      setRemaining(secondsLeft(nextEnd));
+    } else {
+      const next = Math.max(MIN_SECONDS, preset + delta);
+      setPreset(next);
+      setRemaining(next);
+    }
     setDone(false);
   }
 
   function toggle() {
     if (done) {
-      clearInterval(intervalRef.current);
-      setRemaining(preset);
-      setDone(false);
-      setRunning(true);
-      return;
+      start(preset);
+    } else if (running) {
+      setRemaining(Math.max(1, secondsLeft(endAt)));
+      setEndAt(null);
+    } else {
+      start(remaining);
     }
-    setRunning((r) => !r);
-    setDone(false);
   }
 
   function reset() {
-    clearInterval(intervalRef.current);
-    setRunning(false);
+    setEndAt(null);
     setDone(false);
     setRemaining(preset);
   }
 
   function autoStart(seconds) {
-    clearInterval(intervalRef.current);
     setPreset(seconds);
-    setRemaining(seconds);
-    setDone(false);
-    setRunning(true);
+    start(seconds);
   }
 
   return { preset, remaining, running, done, progress: remaining / preset, toggle, reset, selectPreset, adjust, autoStart };
