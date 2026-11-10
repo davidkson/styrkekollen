@@ -74,6 +74,13 @@ Svensk PWA för styrketräningsloggning.
 3. **Delegera** — skicka till subagent för implementation
 4. **Review** — granska resultat innan vi är klara
 
+### Pusha (inga PR:er)
+
+- Skapa **inte** PR:er. Arbete committas och pushas direkt till `main`.
+- När användaren säger "pusha": gör först en kodgranskning av ändringarna (korrekthet, buggar, kantfall). Kör `npm run build` och `npm run lint`.
+- Hittas inga fel → pusha direkt till `main` utan att fråga igen. Hittas fel → rapportera/åtgärda först, pusha inte.
+- Referera issuet i commit-meddelandet (`Fixes #N`) så det stängs automatiskt.
+
 ### Issues från Slack
 
 Issues som skapas via Slack-kanalen kan vara kortfattade eller otydliga. Innan delegering till subagent:
