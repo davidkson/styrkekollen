@@ -553,6 +553,7 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
             <div className="rest-track">
               <div className="rest-fill" style={{ width: `${Math.min(100, Math.max(0, timer.progress * 100))}%` }} />
             </div>
+            <button className="rest-action" onClick={() => timer.adjust(-15)}>−15s</button>
             <button className="rest-action" onClick={() => timer.adjust(+15)}>+15s</button>
             <button className="rest-action" onClick={skipRest}>Hoppa</button>
           </div>
