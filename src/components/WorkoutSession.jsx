@@ -570,7 +570,6 @@ export default function WorkoutSession({ template, savedSets, previousExercises,
                 {s < 60 ? `${s}s` : fmt(s)}
               </button>
             ))}
-            <button className="rest-preset" onClick={() => timer.adjust(-15)}>−15s</button>
             <button className="rest-preset" onClick={timer.reset} title="Återställ">↺</button>
           </div>
         )}
